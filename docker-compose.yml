@@ -1,0 +1,41 @@
+version: '2'
+
+services:
+  db:
+    build:
+      context: ./db
+    image: crowdfunding-db
+    ports:
+      - 5432:5432
+
+  backend-service:
+    image: ampnet/crowdfunding-backend-ae:latest
+    environment:
+      - "spring.profiles.active=integration-test"
+    depends_on:
+       - db
+    ports:
+       - 8123:8123
+
+  blockchain-service:
+    image: ampnet/crowdfunding-ae-middleware:latest
+    environment:
+      NODE_ENV: testnet
+    depends_on:
+      - db
+    ports:
+      - 8124:8124
+      - 8224:8224
+
+  user-service:
+    image: ampnet/crowdfunding-user-service:latest
+    environment:
+      - "spring.profiles.active=integration-test"
+    depends_on:
+      - db
+    ports:
+      - 8125:8125
+  
+
+
+  
