@@ -21,6 +21,7 @@ services:
     image: ampnet/crowdfunding-ae-middleware:latest
     environment:
       NODE_ENV: testnet
+      GIFT_AMOUNT: 0
     depends_on:
       - db
     ports:

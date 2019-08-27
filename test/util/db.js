@@ -113,6 +113,22 @@ async function insertProject(name, owner, orgId) {
     return id
 }
 
+async function insertDeposit(user, amount) {
+    let id = getRandomInt()
+    await backendDb('deposit')
+        .insert({
+            id: id,
+            user_uuid: user.uuid,
+            reference: 'reference',
+            amount: amount,
+            approved: true,
+            approved_by_user_uuid: user.uuid,
+            approved_at: new Date(),
+            created_at: new Date()
+        })
+    return id
+}
+
 function getConfig(db) {
     return {
         client: 'postgresql',
@@ -144,5 +160,6 @@ module.exports = {
     insertUser,
     insertOrganization,
     insertOrganizationMembership,
-    insertProject
+    insertProject,
+    insertDeposit
 }

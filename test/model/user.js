@@ -33,8 +33,8 @@ class TestUser {
         })
     }
     
-    static async createRegular(email) {
-        let user = new TestUser(email, Role.USER)
+    static async createRegular(email, keypair) {
+        let user = new TestUser(email, Role.USER, keypair)
         await user.initClient()
         return user
     }
