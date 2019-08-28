@@ -1,0 +1,71 @@
+version: 2
+executorType: machine
+jobs:
+  test:
+    machine: true
+    environment:
+      TERM: dumb
+    working_directory: ~/repo
+
+    steps:
+      - checkout
+      - run: docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
+      - run: docker network prune -f
+
+      - run: |
+            echo 'export NVM_DIR="/opt/circleci/.nvm"' >> $BASH_ENV
+            echo ' [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"' >> $BASH_ENV
+      - run: |
+          nvm install v12
+          nvm alias default v12
+          node -v
+
+      - restore_cache: # special step to restore the dependency cache
+          # Read about caching dependencies: https://circleci.com/docs/2.0/caching/
+          key: dependency-cache-{{ checksum "package.json" }}
+
+      - run: npm install
+      - save_cache: # special step to save the dependency cache
+          key: dependency-cache-{{ checksum "package.json" }}
+          paths:
+            - ./node_modules
+      - run: npm test
+
+  deploy:
+    machine: true
+    environment:
+      TERM: dumb
+    steps:
+      - add_ssh_keys:
+          fingerprints:
+            - "76:dc:c4:05:04:a9:54:ca:a9:21:35:ba:cc:21:59:cc"
+      - run:
+          name: Update docker-compose
+          command: ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -t root@167.99.142.146 "docker-compose -f /home/eugen/ampnet-docker-compose/docker-compose.yml pull --ignore-pull-failures"
+      - run:
+          name: Run docker-compose
+          command: ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -t root@167.99.142.146 "docker-compose -f /home/eugen/ampnet-docker-compose/docker-compose.yml up -d"
+
+workflows:
+  version: 2
+
+  test-deploy:
+    jobs:
+      - test
+      - deploy:
+          requires:
+            - test
+          filters:
+            branches:
+              only: master
+
+  nightly:
+    triggers:
+      - schedule:
+          cron: "0 2 * * *"
+          filters:
+            branches:
+              only:
+                - master
+    jobs:
+      - test

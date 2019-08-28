@@ -14,7 +14,7 @@ let TestUser = require('./model/user').TestUser
 describe('Complete flow test', function () {
 
     before(async () => {
-        // await docker.up()
+        await docker.up()
 
         await db.cleanBackend()
         await db.cleanBlockchain()
@@ -153,7 +153,7 @@ describe('Complete flow test', function () {
     }
 
     after(async() => {
-        // await docker.down()
+        await docker.down()
     })
 
 })
