@@ -38,7 +38,7 @@ jobs:
     steps:
       - add_ssh_keys:
           fingerprints:
-            - "76:dc:c4:05:04:a9:54:ca:a9:21:35:ba:cc:21:59:cc"
+            - "eb:5d:e1:b3:8b:7e:4d:a5:8b:d7:44:e2:94:61:2a:65"
       - run:
           name: Update docker-compose
           command: ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -t root@167.99.142.146 "docker-compose -f /home/eugen/ampnet-docker-compose/docker-compose.yml pull --ignore-pull-failures"
