@@ -15,12 +15,13 @@ describe('Complete flow test', function () {
 
     before(async () => {
         await docker.up()
+        await ae.init()
+    })
 
+    beforeEach(async () => {
         await db.cleanBackend()
         await db.cleanBlockchain()
         await db.cleanUser()
-
-        await ae.init()
     })
 
     it('Must be able to execute complete flow', async () => {
@@ -67,6 +68,25 @@ describe('Complete flow test', function () {
 
         let projectBalance = (await backendSvc.getProjectWallet(projId)).balance
         expect(projectBalance).to.equal(bobInvestAmount)
+    })
+
+    it('User service integration', async () => {
+        let owner = await TestUser.createRegular('owner@org.com')
+        await db.insertUser(owner)
+        await owner.getJwtToken()
+
+        let member = await TestUser.createRegular('member@org.com')
+        await db.insertUser(member)
+        await member.getJwtToken()
+
+        let orgId = await db.insertOrganization('Uber org', owner)
+        await db.insertOrganizationMembership(owner, orgId)
+        await db.insertOrganizationMembership(member, orgId)
+
+        let members = (await backendSvc.getOrganizationMemberships(owner, orgId)).members
+        expect(members).to.have.lengthOf(1)
+        let orgMember = members[0]
+        expect(orgMember.uuid).to.equal(member.uuid)
     })
 
     async function createUserWithWallet(user, admin) {
