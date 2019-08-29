@@ -10,6 +10,10 @@ async function createUserWallet(user) {
     }, getBearer(user.token))).data
 }
 
+async function getOrganizationMemberships(user, orgId) {
+    return (await axios.get(url.resolve(baseUrl, `organization/${orgId}/members`), getBearer(user.token))).data
+}
+
 async function getUserWallet(user) {
     return (await axios.get(url.resolve(baseUrl, "wallet"), getBearer(user.token))).data
 }
@@ -81,6 +85,7 @@ function getUrlEncodedContentType() {
 
 module.exports = { 
     createUserWallet,
+    getOrganizationMemberships,
     getUserWallet,
     getOrganizationWallet,
     getProjectWallet,

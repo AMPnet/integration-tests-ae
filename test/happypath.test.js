@@ -15,12 +15,13 @@ describe('Complete flow test', function () {
 
     before(async () => {
         await docker.up()
+        await ae.init()
+    })
 
+    beforeEach(async () => {
         await db.cleanBackend()
         await db.cleanBlockchain()
         await db.cleanUser()
-
-        await ae.init()
     })
 
     it('Must be able to execute complete flow', async () => {
@@ -69,6 +70,25 @@ describe('Complete flow test', function () {
         expect(projectBalance).to.equal(bobInvestAmount)
     })
 
+    it('User service integration', async () => {
+        let owner = await TestUser.createRegular('owner@org.com')
+        await db.insertUser(owner)
+        await owner.getJwtToken()
+
+        let member = await TestUser.createRegular('member@org.com')
+        await db.insertUser(member)
+        await member.getJwtToken()
+
+        let orgId = await db.insertOrganization('Uber org', owner)
+        await db.insertOrganizationMembership(owner, orgId)
+        await db.insertOrganizationMembership(member, orgId)
+
+        let members = (await backendSvc.getOrganizationMemberships(owner, orgId)).members
+        expect(members).to.have.lengthOf(1)
+        let orgMember = members[0]
+        expect(orgMember.uuid).to.equal(member.uuid)
+    })
+
     async function createUserWithWallet(user, admin) {
         await db.insertUser(user)
         await user.getJwtToken()
@@ -91,7 +111,7 @@ describe('Complete flow test', function () {
         await db.insertOrganizationMembership(owner, orgId)
 
         let createOrgTx = await backendSvc.generateCreateOrgTx(owner, orgId)
-        let signedCreateOrgTx = await owner.client.signTransaction(createOrgTx.tx.tx)
+        let signedCreateOrgTx = await owner.client.signTransaction(createOrgTx.tx)
         let createOrgTxHash = await backendSvc.broadcastTx(signedCreateOrgTx, createOrgTx.tx_id)
         expect(createOrgTxHash.tx_hash).to.not.be.undefined
 
@@ -111,7 +131,7 @@ describe('Complete flow test', function () {
         let projId = await db.insertProject(name, owner, orgId)
 
         let createProjTx = await backendSvc.generateCreateProjTx(owner, projId)
-        let signedCreateProjTx = await owner.client.signTransaction(createProjTx.tx.tx)
+        let signedCreateProjTx = await owner.client.signTransaction(createProjTx.tx)
         let createProjTxHash = await backendSvc.broadcastTx(signedCreateProjTx, createProjTx.tx_id)
 
         await ae.waitMined(createProjTxHash.tx_hash)
@@ -128,7 +148,7 @@ describe('Complete flow test', function () {
 
     async function activateWallet(walletId, admin) {
         let walletActivationTx = await backendSvc.generateWalletActivationTx(admin, walletId)
-        let signedWalletActivationTx = await admin.client.signTransaction(walletActivationTx.tx.tx)
+        let signedWalletActivationTx = await admin.client.signTransaction(walletActivationTx.tx)
         let walletActivationTxHash = await backendSvc.broadcastTx(signedWalletActivationTx, walletActivationTx.tx_id)
         expect(walletActivationTxHash.tx_hash).to.not.be.undefined
 
@@ -138,7 +158,7 @@ describe('Complete flow test', function () {
     async function mint(user, amount, admin) {
         let depositId = await db.insertDeposit(user, amount)
         let mintTx = await backendSvc.generateMintTx(admin, depositId)
-        let mintTxSigned = await admin.client.signTransaction(mintTx.tx.tx)
+        let mintTxSigned = await admin.client.signTransaction(mintTx.tx)
         let mintTxHash = await backendSvc.broadcastTx(mintTxSigned, mintTx.tx_id)
 
         await ae.waitMined(mintTxHash.tx_hash)
@@ -146,7 +166,7 @@ describe('Complete flow test', function () {
 
     async function invest(investor, projId, amount) {
         let investTx = await backendSvc.generateInvestTx(investor, projId, amount)
-        let investTxSigned = await investor.client.signTransaction(investTx.tx.tx)
+        let investTxSigned = await investor.client.signTransaction(investTx.tx)
         let investTxHash = await backendSvc.broadcastTx(investTxSigned, investTx.tx_id)
 
         await ae.waitMined(investTxHash.tx_hash)
