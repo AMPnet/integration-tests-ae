@@ -111,7 +111,7 @@ describe('Complete flow test', function () {
         await db.insertOrganizationMembership(owner, orgId)
 
         let createOrgTx = await backendSvc.generateCreateOrgTx(owner, orgId)
-        let signedCreateOrgTx = await owner.client.signTransaction(createOrgTx.tx.tx)
+        let signedCreateOrgTx = await owner.client.signTransaction(createOrgTx.tx)
         let createOrgTxHash = await backendSvc.broadcastTx(signedCreateOrgTx, createOrgTx.tx_id)
         expect(createOrgTxHash.tx_hash).to.not.be.undefined
 
@@ -131,7 +131,7 @@ describe('Complete flow test', function () {
         let projId = await db.insertProject(name, owner, orgId)
 
         let createProjTx = await backendSvc.generateCreateProjTx(owner, projId)
-        let signedCreateProjTx = await owner.client.signTransaction(createProjTx.tx.tx)
+        let signedCreateProjTx = await owner.client.signTransaction(createProjTx.tx)
         let createProjTxHash = await backendSvc.broadcastTx(signedCreateProjTx, createProjTx.tx_id)
 
         await ae.waitMined(createProjTxHash.tx_hash)
@@ -148,7 +148,7 @@ describe('Complete flow test', function () {
 
     async function activateWallet(walletId, admin) {
         let walletActivationTx = await backendSvc.generateWalletActivationTx(admin, walletId)
-        let signedWalletActivationTx = await admin.client.signTransaction(walletActivationTx.tx.tx)
+        let signedWalletActivationTx = await admin.client.signTransaction(walletActivationTx.tx)
         let walletActivationTxHash = await backendSvc.broadcastTx(signedWalletActivationTx, walletActivationTx.tx_id)
         expect(walletActivationTxHash.tx_hash).to.not.be.undefined
 
@@ -158,7 +158,7 @@ describe('Complete flow test', function () {
     async function mint(user, amount, admin) {
         let depositId = await db.insertDeposit(user, amount)
         let mintTx = await backendSvc.generateMintTx(admin, depositId)
-        let mintTxSigned = await admin.client.signTransaction(mintTx.tx.tx)
+        let mintTxSigned = await admin.client.signTransaction(mintTx.tx)
         let mintTxHash = await backendSvc.broadcastTx(mintTxSigned, mintTx.tx_id)
 
         await ae.waitMined(mintTxHash.tx_hash)
@@ -166,7 +166,7 @@ describe('Complete flow test', function () {
 
     async function invest(investor, projId, amount) {
         let investTx = await backendSvc.generateInvestTx(investor, projId, amount)
-        let investTxSigned = await investor.client.signTransaction(investTx.tx.tx)
+        let investTxSigned = await investor.client.signTransaction(investTx.tx)
         let investTxHash = await backendSvc.broadcastTx(investTxSigned, investTx.tx_id)
 
         await ae.waitMined(investTxHash.tx_hash)
