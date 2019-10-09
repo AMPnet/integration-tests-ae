@@ -32,6 +32,10 @@ class TestUser {
             compilerUrl: 'https://compiler.aepps.com'
         })
     }
+
+    setWalletUuid(walletUuid) {
+        this.walletUuid = walletUuid
+    }
     
     static async createRegular(email, keypair) {
         let user = new TestUser(email, Role.USER, keypair)

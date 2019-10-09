@@ -32,9 +32,10 @@ async function down() {
 
 async function healthcheck() {
     let blockchainServiceChecker = new HTTPChecker('Blockchain Service checker', 'http://localhost:8124/metrics')
-    let backendServiceChecker = new HTTPChecker('Backend Service checker', 'http://localhost:8123/actuator/health')
+    let projectServiceChecker = new HTTPChecker('Project Service checker', 'http://localhost:8123/actuator/health')
+    let walletServiceChecker = new HTTPChecker('Wallet Service checker', 'http://localhost:8128/actuator/health')
     let userServiceChecker = new HTTPChecker('User Service checker', 'http://localhost:8125/actuator/health')
-    let healthcheck = new Healthcheck([blockchainServiceChecker, backendServiceChecker, userServiceChecker])
+    let healthcheck = new Healthcheck([blockchainServiceChecker, projectServiceChecker, walletServiceChecker, userServiceChecker])
     var numberOfChecks = 0
     do {
         if (numberOfChecks >= maxNumberOfChecks) {

@@ -2,7 +2,7 @@ let axios = require('axios')
 let url = require('url')
 let qs = require('querystring')
 
-let baseUrl = "http://localhost:8123"
+let baseUrl = "http://localhost:8128"
 
 async function createUserWallet(user) {
     return (await axios.post(url.resolve(baseUrl, "wallet"), {
@@ -10,20 +10,20 @@ async function createUserWallet(user) {
     }, getBearer(user.token))).data
 }
 
-async function getOrganizationMemberships(user, orgId) {
-    return (await axios.get(url.resolve(baseUrl, `organization/${orgId}/members`), getBearer(user.token))).data
-}
-
 async function getUserWallet(user) {
     return (await axios.get(url.resolve(baseUrl, "wallet"), getBearer(user.token))).data
 }
 
-async function getOrganizationWallet(owner, orgId) {
-    return (await axios.get(url.resolve(baseUrl, `wallet/organization/${orgId}`), getBearer(owner.token))).data
+async function getOrganizationWallet(owner, orgUuid) {
+    return (await axios.get(url.resolve(baseUrl, `wallet/organization/${orgUuid}`), getBearer(owner.token))).data
 }
 
-async function getProjectWallet(projId) {
-    return (await axios.get(url.resolve(baseUrl, `public/wallet/project/${projId}`))).data
+async function getProjectWallet(projUuid) {
+    return (await axios.get(url.resolve(baseUrl, `public/wallet/project/${projUuid}`))).data
+}
+
+async function getUnactivatedUserWallets(admin) {
+    return (await axios.get(url.resolve(baseUrl, 'cooperative/wallet/user'), getBearer(admin.token))).data
 }
 
 async function getUnactivatedOrgWallets(admin) {
@@ -34,25 +34,25 @@ async function getUnactivatedProjWallets(admin) {
     return (await axios.get(url.resolve(baseUrl, 'cooperative/wallet/project'), getBearer(admin.token))).data
 }
 
-async function generateWalletActivationTx(admin, walletId) {
-    return (await axios.post(url.resolve(baseUrl, `cooperative/wallet/${walletId}/transaction`), {}, getBearer(admin.token))).data
+async function generateWalletActivationTx(admin, walletUuid) {
+    return (await axios.post(url.resolve(baseUrl, `cooperative/wallet/${walletUuid}/transaction`), {}, getBearer(admin.token))).data
 }
 
-async function generateCreateOrgTx(user, orgId) {
-    return (await axios.get(url.resolve(baseUrl, `wallet/organization/${orgId}/transaction`), getBearer(user.token))).data
+async function generateCreateOrgTx(user, orgUuid) {
+    return (await axios.get(url.resolve(baseUrl, `wallet/organization/${orgUuid}/transaction`), getBearer(user.token))).data
 }
 
-async function generateCreateProjTx(user, projId) {
-    return (await axios.get(url.resolve(baseUrl, `wallet/project/${projId}/transaction`), getBearer(user.token))).data
+async function generateCreateProjTx(user, projUuid) {
+    return (await axios.get(url.resolve(baseUrl, `wallet/project/${projUuid}/transaction`), getBearer(user.token))).data
 }
 
 async function generateMintTx(admin, depositId) {
-    return (await axios.post(url.resolve(baseUrl, `api/v1/deposit/${depositId}/transaction`), {}, getBearer(admin.token))).data
+    return (await axios.post(url.resolve(baseUrl, `deposit/${depositId}/transaction`), {}, getBearer(admin.token))).data
 }
 
-async function generateInvestTx(investor, projId, amount) {
+async function generateInvestTx(investor, projUuid, amount) {
     return (await axios.get(
-        url.resolve(baseUrl, `project/${projId}/invest?amount=${amount}`),
+        url.resolve(baseUrl, `invest/project/${projUuid}?amount=${amount}`),
         getBearer(investor.token)
     ).catch(err => {
         console.log(err)
@@ -85,10 +85,10 @@ function getUrlEncodedContentType() {
 
 module.exports = { 
     createUserWallet,
-    getOrganizationMemberships,
     getUserWallet,
     getOrganizationWallet,
     getProjectWallet,
+    getUnactivatedUserWallets,
     getUnactivatedOrgWallets,
     getUnactivatedProjWallets,
     generateWalletActivationTx,

@@ -7,7 +7,8 @@ let db = require('./util/db')
 let ae = require('./util/ae')
 let time = require('./util/time')
 
-let backendSvc = require('./service/backend-svc')
+let projectSvc = require('./service/project-svc')
+let walletSvc = require('./service/wallet-svc')
 
 let TestUser = require('./model/user').TestUser
 
@@ -19,9 +20,10 @@ describe('Complete flow test', function () {
     })
 
     beforeEach(async () => {
-        await db.cleanBackend()
         await db.cleanBlockchain()
         await db.cleanUser()
+        await db.cleanProject()
+        await db.cleanWallet()
     })
 
     it('Must be able to execute complete flow', async () => {
@@ -36,13 +38,14 @@ describe('Complete flow test', function () {
             secretKey: 'a03e0135c1d9a3352900f667b4dc57e688381cd34e72fa70e5aff30dadb37a77bbd560afdbc683ba818ac94b5893947e9977edd7ee92b659080c8f1658621618'
         }
         let alice = await TestUser.createRegular('alice@email.com', aliceKeypair)
-        await createUserWithWallet(alice, admin)
+        await createUserWithWallet(alice)
+        await activateWallet(alice.walletUuid, admin)
 
         // Alice creates Organization with wallet
-        let orgId = await createOrganizationWithWallet('ZEF', alice, admin)
+        let orgUuid = await createOrganizationWithWallet('ZEF', alice, admin)
 
         // Alice Project with wallet
-        let projId = await createProjectWithWallet('Projekt', alice, orgId, admin)
+        let projUuid = await createProjectWithWallet('Projekt', alice, orgUuid, admin)
 
         // Create user Bob with wallet and mint tokens
         let bobKeypair = {
@@ -51,26 +54,28 @@ describe('Complete flow test', function () {
         }
         let bob = await TestUser.createRegular('bob@email.com', bobKeypair)
         let bobDepositAmount = 100000
-        await createUserWithWallet(bob, admin)
+        await createUserWithWallet(bob)
+        await activateWallet(bob.walletUuid, admin)
         await mint(bob, bobDepositAmount, admin)
 
         // Check bob balance
-        let bobBalance = (await backendSvc.getUserWallet(bob)).balance
+        let bobBalance = (await walletSvc.getUserWallet(bob)).balance
         expect(bobBalance).to.equal(bobDepositAmount)
         
         // Bob invests in Alice's project
         let bobInvestAmount = 100000
-        await invest(bob, projId, bobInvestAmount)
+        await invest(bob, projUuid, bobInvestAmount)
 
         // Assert that investment was transferred to project wallet
         console.log("Sleeping 5 seconds")
         await time.sleep(5000)
 
-        let projectBalance = (await backendSvc.getProjectWallet(projId)).balance
+        console.log('Project uuid', projUuid)
+        let projectBalance = (await walletSvc.getProjectWallet(projUuid)).balance
         expect(projectBalance).to.equal(bobInvestAmount)
     })
 
-    it('User service integration', async () => {
+    it('Validate Project service connection to User service', async () => {
         let owner = await TestUser.createRegular('owner@org.com')
         await db.insertUser(owner)
         await owner.getJwtToken()
@@ -79,77 +84,119 @@ describe('Complete flow test', function () {
         await db.insertUser(member)
         await member.getJwtToken()
 
-        let orgId = await db.insertOrganization('Uber org', owner)
-        await db.insertOrganizationMembership(owner, orgId)
-        await db.insertOrganizationMembership(member, orgId)
+        let orgUuid = await db.insertOrganization('Uber org', owner)
+        await db.insertOrganizationMembership(owner, orgUuid)
+        await db.insertOrganizationMembership(member, orgUuid)
 
-        let members = (await backendSvc.getOrganizationMemberships(owner, orgId)).members
+        let members = (await projectSvc.getOrganizationMemberships(owner, orgUuid)).members
         expect(members).to.have.lengthOf(1)
         let orgMember = members[0]
         expect(orgMember.uuid).to.equal(member.uuid)
     })
 
-    async function createUserWithWallet(user, admin) {
+    it('Validate Wallet service connection to User service', async () => {
+        // Get all users with un-activated wallets
+
+        // Create Admin
+        let admin = await TestUser.createAdmin('admin@email.com')
+        await db.insertUser(admin)
+        await admin.getJwtToken()
+
+        // Create user Alice with wallet
+        let aliceKeypair = {
+            publicKey: 'ak_2RixP34RH4CtWQvy5TkKmxACjMYcvEjwPqxXz5V6kxHsuzhPD9',
+            secretKey: 'a03e0135c1d9a3352900f667b4dc57e688381cd34e72fa70e5aff30dadb37a77bbd560afdbc683ba818ac94b5893947e9977edd7ee92b659080c8f1658621618'
+        }
+        let alice = await TestUser.createRegular('alice@email.com', aliceKeypair)
+        await createUserWithWallet(alice)
+
+        let unactivatedUserWallets = await walletSvc.getUnactivatedUserWallets(admin)
+        expect(unactivatedUserWallets.users).to.have.lengthOf(1)
+        let user = unactivatedUserWallets.users[0].user
+        expect(user.uuid).to.equal(alice.uuid)
+    })
+
+    it('Validate Wallet service connection to Project service', async () => {
+        // Get transaction to create organization wallet
+
+        // Create Admin
+        let admin = await TestUser.createAdmin('admin@email.com')
+        await db.insertUser(admin)
+        await admin.getJwtToken()
+
+        // Create user Alice with wallet
+        let aliceKeypair = {
+            publicKey: 'ak_2RixP34RH4CtWQvy5TkKmxACjMYcvEjwPqxXz5V6kxHsuzhPD9',
+            secretKey: 'a03e0135c1d9a3352900f667b4dc57e688381cd34e72fa70e5aff30dadb37a77bbd560afdbc683ba818ac94b5893947e9977edd7ee92b659080c8f1658621618'
+        }
+        let alice = await TestUser.createRegular('alice@email.com', aliceKeypair)
+        await createUserWithWallet(alice)
+        await activateWallet(alice.walletUuid, admin)
+
+        let orgName = 'TBD'
+        let orgUuid = await db.insertOrganization(orgName, alice)
+        await db.insertOrganizationMembership(alice, orgUuid)
+
+        let createOrgTx = await walletSvc.generateCreateOrgTx(alice, orgUuid)
+        expect(createOrgTx).to.not.be.undefined
+    })
+
+    async function createUserWithWallet(user) {
         await db.insertUser(user)
         await user.getJwtToken()
-        await backendSvc.getUserWallet(user).catch(err => {
+        await walletSvc.getUserWallet(user).catch(err => {
             expect(err.response.status).to.equal(404)
         })
-        let wallet = await backendSvc.createUserWallet(user)
+        let wallet = await walletSvc.createUserWallet(user)
         expect(wallet).to.not.be.undefined
 
-        // Admin activates Alice's wallet
-        await activateWallet(wallet.id, admin)
-
-        // Fetch Alice's balance
-        let activatedWallet = await backendSvc.getUserWallet(user)
-        expect(activatedWallet.balance).to.equal(0)
+        user.setWalletUuid(wallet.uuid)
     }
 
     async function createOrganizationWithWallet(name, owner, admin) {
-        let orgId = await db.insertOrganization(name, owner)
-        await db.insertOrganizationMembership(owner, orgId)
+        let orgUuid = await db.insertOrganization(name, owner)
+        await db.insertOrganizationMembership(owner, orgUuid)
 
-        let createOrgTx = await backendSvc.generateCreateOrgTx(owner, orgId)
+        let createOrgTx = await walletSvc.generateCreateOrgTx(owner, orgUuid)
         let signedCreateOrgTx = await owner.client.signTransaction(createOrgTx.tx)
-        let createOrgTxHash = await backendSvc.broadcastTx(signedCreateOrgTx, createOrgTx.tx_id)
+        let createOrgTxHash = await walletSvc.broadcastTx(signedCreateOrgTx, createOrgTx.tx_id)
         expect(createOrgTxHash.tx_hash).to.not.be.undefined
 
         await ae.waitMined(createOrgTxHash.tx_hash)
         
-        let unactivatedOrgWallets = await backendSvc.getUnactivatedOrgWallets(admin)
+        let unactivatedOrgWallets = await walletSvc.getUnactivatedOrgWallets(admin)
         expect(unactivatedOrgWallets.organizations).to.have.lengthOf(1)
-        await activateWallet(unactivatedOrgWallets.organizations[0].wallet.id, admin)
+        await activateWallet(unactivatedOrgWallets.organizations[0].wallet.uuid, admin)
         
-        let activatedOrgWallet = await backendSvc.getOrganizationWallet(owner, orgId)
+        let activatedOrgWallet = await walletSvc.getOrganizationWallet(owner, orgUuid)
         expect(activatedOrgWallet.balance).to.equal(0)
 
-        return orgId
+        return orgUuid
     }
 
-    async function createProjectWithWallet(name, owner, orgId, admin) {
-        let projId = await db.insertProject(name, owner, orgId)
+    async function createProjectWithWallet(name, owner, orgUuid, admin) {
+        let projUuid = await db.insertProject(name, owner, orgUuid)
 
-        let createProjTx = await backendSvc.generateCreateProjTx(owner, projId)
+        let createProjTx = await walletSvc.generateCreateProjTx(owner, projUuid)
         let signedCreateProjTx = await owner.client.signTransaction(createProjTx.tx)
-        let createProjTxHash = await backendSvc.broadcastTx(signedCreateProjTx, createProjTx.tx_id)
+        let createProjTxHash = await walletSvc.broadcastTx(signedCreateProjTx, createProjTx.tx_id)
 
         await ae.waitMined(createProjTxHash.tx_hash)
 
-        let unactivatedProjWallets = await backendSvc.getUnactivatedProjWallets(admin)
+        let unactivatedProjWallets = await walletSvc.getUnactivatedProjWallets(admin)
         expect(unactivatedProjWallets.projects).to.have.lengthOf(1)
-        await activateWallet(unactivatedProjWallets.projects[0].wallet.id, admin)
+        await activateWallet(unactivatedProjWallets.projects[0].wallet.uuid, admin)
 
-        let activatedProjWallet = await backendSvc.getProjectWallet(projId)
+        let activatedProjWallet = await walletSvc.getProjectWallet(projUuid)
         expect(activatedProjWallet.balance).to.equal(0)
 
-        return projId
+        return projUuid
     }
 
-    async function activateWallet(walletId, admin) {
-        let walletActivationTx = await backendSvc.generateWalletActivationTx(admin, walletId)
+    async function activateWallet(walletUuid, admin) {
+        let walletActivationTx = await walletSvc.generateWalletActivationTx(admin, walletUuid)
         let signedWalletActivationTx = await admin.client.signTransaction(walletActivationTx.tx)
-        let walletActivationTxHash = await backendSvc.broadcastTx(signedWalletActivationTx, walletActivationTx.tx_id)
+        let walletActivationTxHash = await walletSvc.broadcastTx(signedWalletActivationTx, walletActivationTx.tx_id)
         expect(walletActivationTxHash.tx_hash).to.not.be.undefined
 
         await ae.waitMined(walletActivationTxHash.tx_hash)
@@ -157,17 +204,17 @@ describe('Complete flow test', function () {
 
     async function mint(user, amount, admin) {
         let depositId = await db.insertDeposit(user, amount)
-        let mintTx = await backendSvc.generateMintTx(admin, depositId)
+        let mintTx = await walletSvc.generateMintTx(admin, depositId)
         let mintTxSigned = await admin.client.signTransaction(mintTx.tx)
-        let mintTxHash = await backendSvc.broadcastTx(mintTxSigned, mintTx.tx_id)
+        let mintTxHash = await walletSvc.broadcastTx(mintTxSigned, mintTx.tx_id)
 
         await ae.waitMined(mintTxHash.tx_hash)
     }
 
-    async function invest(investor, projId, amount) {
-        let investTx = await backendSvc.generateInvestTx(investor, projId, amount)
+    async function invest(investor, projUuid, amount) {
+        let investTx = await walletSvc.generateInvestTx(investor, projUuid, amount)
         let investTxSigned = await investor.client.signTransaction(investTx.tx)
-        let investTxHash = await backendSvc.broadcastTx(investTxSigned, investTx.tx_id)
+        let investTxHash = await walletSvc.broadcastTx(investTxSigned, investTx.tx_id)
 
         await ae.waitMined(investTxHash.tx_hash)
     }

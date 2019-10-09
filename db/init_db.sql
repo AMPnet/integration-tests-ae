@@ -1,5 +1,8 @@
-CREATE DATABASE crowdfunding_ae ENCODING 'UTF-8';
-CREATE USER crowdfunding_ae WITH PASSWORD 'password';
+CREATE DATABASE project_service ENCODING 'UTF-8';
+CREATE USER project_service WITH PASSWORD 'password';
+
+CREATE DATABASE wallet_service ENCODING 'UTF-8';
+CREATE USER wallet_service WITH PASSWORD 'password';
 
 CREATE DATABASE user_service ENCODING 'UTF-8';
 CREATE USER user_service WITH PASSWORD 'password';
