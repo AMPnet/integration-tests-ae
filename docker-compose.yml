@@ -9,7 +9,7 @@ services:
       - 5432:5432
 
   project-service:
-    image: ampnet/ampnet-project-service:latest
+    image: ampnet/project-service:latest
     environment:
       - "spring.profiles.active=integration-test"
     depends_on:
@@ -18,7 +18,7 @@ services:
        - 8123:8123
 
   wallet-service:
-    image: ampnet/ampnet-wallet-service:latest
+    image: ampnet/wallet-service:latest
     environment:
       - "spring.profiles.active=integration-test"
     depends_on:
