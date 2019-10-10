@@ -26,55 +26,6 @@ describe('Complete flow test', function () {
         await db.cleanWallet()
     })
 
-    it('Must be able to execute complete flow', async () => {
-        // Create Admin
-        let admin = await TestUser.createAdmin('admin@email.com')
-        await db.insertUser(admin)
-        await admin.getJwtToken()
-
-        // Create user Alice with wallet
-        let aliceKeypair = {
-            publicKey: 'ak_2RixP34RH4CtWQvy5TkKmxACjMYcvEjwPqxXz5V6kxHsuzhPD9',
-            secretKey: 'a03e0135c1d9a3352900f667b4dc57e688381cd34e72fa70e5aff30dadb37a77bbd560afdbc683ba818ac94b5893947e9977edd7ee92b659080c8f1658621618'
-        }
-        let alice = await TestUser.createRegular('alice@email.com', aliceKeypair)
-        await createUserWithWallet(alice)
-        await activateWallet(alice.walletUuid, admin)
-
-        // Alice creates Organization with wallet
-        let orgUuid = await createOrganizationWithWallet('ZEF', alice, admin)
-
-        // Alice Project with wallet
-        let projUuid = await createProjectWithWallet('Projekt', alice, orgUuid, admin)
-
-        // Create user Bob with wallet and mint tokens
-        let bobKeypair = {
-            publicKey: 'ak_252DNaXH299yuTGA2Bmq6i6ZEtWEkSGxyQCFyk5WQKC3sWnxiM',
-            secretKey: 'b91ba1f0e4479194c10bd964610a394f02d8ecf693819e3767b65328a39152598cd37a40294e5fc7faaa7b469f447fc724d0a2b28dcdc167032dcd4a1d90d8af'
-        }
-        let bob = await TestUser.createRegular('bob@email.com', bobKeypair)
-        let bobDepositAmount = 100000
-        await createUserWithWallet(bob)
-        await activateWallet(bob.walletUuid, admin)
-        await mint(bob, bobDepositAmount, admin)
-
-        // Check bob balance
-        let bobBalance = (await walletSvc.getUserWallet(bob)).balance
-        expect(bobBalance).to.equal(bobDepositAmount)
-        
-        // Bob invests in Alice's project
-        let bobInvestAmount = 100000
-        await invest(bob, projUuid, bobInvestAmount)
-
-        // Assert that investment was transferred to project wallet
-        console.log("Sleeping 5 seconds")
-        await time.sleep(5000)
-
-        console.log('Project uuid', projUuid)
-        let projectBalance = (await walletSvc.getProjectWallet(projUuid)).balance
-        expect(projectBalance).to.equal(bobInvestAmount)
-    })
-
     it('Validate Project service connection to User service', async () => {
         let owner = await TestUser.createRegular('owner@org.com')
         await db.insertUser(owner)
@@ -139,6 +90,54 @@ describe('Complete flow test', function () {
 
         let createOrgTx = await walletSvc.generateCreateOrgTx(alice, orgUuid)
         expect(createOrgTx).to.not.be.undefined
+    })
+
+    it('Must be able to execute complete flow', async () => {
+        // Create Admin
+        let admin = await TestUser.createAdmin('admin@email.com')
+        await db.insertUser(admin)
+        await admin.getJwtToken()
+
+        // Create user Alice with wallet
+        let aliceKeypair = {
+            publicKey: 'ak_2RixP34RH4CtWQvy5TkKmxACjMYcvEjwPqxXz5V6kxHsuzhPD9',
+            secretKey: 'a03e0135c1d9a3352900f667b4dc57e688381cd34e72fa70e5aff30dadb37a77bbd560afdbc683ba818ac94b5893947e9977edd7ee92b659080c8f1658621618'
+        }
+        let alice = await TestUser.createRegular('alice@email.com', aliceKeypair)
+        await createUserWithWallet(alice)
+        await activateWallet(alice.walletUuid, admin)
+
+        // Alice creates Organization with wallet
+        let orgUuid = await createOrganizationWithWallet('ZEF', alice, admin)
+
+        // Alice Project with wallet
+        let projUuid = await createProjectWithWallet('Projekt', alice, orgUuid, admin)
+
+        // Create user Bob with wallet and mint tokens
+        let bobKeypair = {
+            publicKey: 'ak_252DNaXH299yuTGA2Bmq6i6ZEtWEkSGxyQCFyk5WQKC3sWnxiM',
+            secretKey: 'b91ba1f0e4479194c10bd964610a394f02d8ecf693819e3767b65328a39152598cd37a40294e5fc7faaa7b469f447fc724d0a2b28dcdc167032dcd4a1d90d8af'
+        }
+        let bob = await TestUser.createRegular('bob@email.com', bobKeypair)
+        let bobDepositAmount = 100000
+        await createUserWithWallet(bob)
+        await activateWallet(bob.walletUuid, admin)
+        await mint(bob, bobDepositAmount, admin)
+
+        // Check bob balance
+        let bobBalance = (await walletSvc.getUserWallet(bob)).balance
+        expect(bobBalance).to.equal(bobDepositAmount)
+        
+        // Bob invests in Alice's project
+        let bobInvestAmount = 100000
+        await invest(bob, projUuid, bobInvestAmount)
+
+        // Assert that investment was transferred to project wallet
+        console.log("Sleeping 5 seconds")
+        await time.sleep(5000)
+
+        let projectBalance = (await walletSvc.getProjectWallet(projUuid)).balance
+        expect(projectBalance).to.equal(bobInvestAmount)
     })
 
     async function createUserWithWallet(user) {
