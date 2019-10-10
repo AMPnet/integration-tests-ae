@@ -1,16 +1,21 @@
 let knex = require('knex')
 let time = require('./time')
+let uuid = require('uuid/v4')
 
-let backendDb       = knex(getConfig("crowdfunding_ae"))
 let blockchainDb    = knex(getConfig("ae_middleware_testnet"))
 let userDb          = knex(getConfig("user_service"))
+let projectDb       = knex(getConfig("project_service"))
+let walletDb       = knex(getConfig("wallet_service"))
 
 const ORG_ADMIN_ROLE = 1
 
-async function cleanBackend() {
-    await backendDb.raw('TRUNCATE TABLE wallet CASCADE')
-    await backendDb.raw('TRUNCATE TABLE organization CASCADE')
-    await backendDb.raw('TRUNCATE TABLE project CASCADE')
+async function cleanProject() {
+    await projectDb.raw('TRUNCATE TABLE organization CASCADE')
+    await projectDb.raw('TRUNCATE TABLE project CASCADE')
+}
+
+async function cleanWallet() {
+    await walletDb.raw('TRUNCATE TABLE wallet CASCADE')
 }
 
 async function cleanBlockchain() {
@@ -61,40 +66,39 @@ async function insertUser(user) {
 }
 
 async function insertOrganization(name, owner) {
-    let id = getRandomInt()
-    await backendDb('organization')
+    let generatedUuid = uuid()
+    await projectDb('organization')
         .insert({
-            id: id,
+            uuid: generatedUuid,
             name: name,
             created_by_user_uuid: owner.uuid,
             created_at: new Date(),
             updated_at: null,
             approved: true,
             approved_by_user_uuid: owner.uuid,
-            legal_info: null,
-            wallet_id: null
+            legal_info: null
         })
-    return id
+    return generatedUuid
 }
 
-async function insertOrganizationMembership(member, orgId) {
+async function insertOrganizationMembership(member, orgUuid) {
     let id = getRandomInt()
-    await backendDb('organization_membership')
+    await projectDb('organization_membership')
         .insert({
             id: id,
-            organization_id: orgId,
+            organization_uuid: orgUuid,
             user_uuid: member.uuid,
             role_id: ORG_ADMIN_ROLE,
             created_at: new Date()
         })
 }
 
-async function insertProject(name, owner, orgId) {
-    let id = getRandomInt()
-    await backendDb('project')
+async function insertProject(name, owner, orgUuid) {
+    let generatedUuid = uuid()
+    await projectDb('project')
         .insert({
-            id: id,
-            organization_id: orgId,
+            uuid: generatedUuid,    
+            organization_uuid: orgUuid,
             name: name,
             description: 'description',
             location: 'location',
@@ -110,12 +114,12 @@ async function insertProject(name, owner, orgId) {
             created_at: new Date(),
             active: true
         })
-    return id
+    return generatedUuid
 }
 
 async function insertDeposit(user, amount) {
     let id = getRandomInt()
-    await backendDb('deposit')
+    await walletDb('deposit')
         .insert({
             id: id,
             user_uuid: user.uuid,
@@ -154,7 +158,8 @@ function getRandomInt() {
 }
 
 module.exports = {
-    cleanBackend,
+    cleanWallet,
+    cleanProject,
     cleanBlockchain,
     cleanUser,
     insertUser,
