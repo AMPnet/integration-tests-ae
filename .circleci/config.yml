@@ -59,13 +59,13 @@ workflows:
             branches:
               only: master
 
-  # nightly:
-  #   triggers:
-  #     - schedule:
-  #         cron: "0 2 * * *"
-  #         filters:
-  #           branches:
-  #             only:
-  #               - master
-    # jobs:
-    #   - test
+  nightly:
+    triggers:
+      - schedule:
+          cron: "0 2 * * *"
+          filters:
+            branches:
+              only:
+                - master
+    jobs:
+      - test
