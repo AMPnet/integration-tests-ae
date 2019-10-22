@@ -27,7 +27,7 @@ services:
        - 8128:8128
 
   blockchain-service:
-    image: ampnet/crowdfunding-ae-middleware:0.0.99
+    image: ampnet/crowdfunding-ae-middleware:latest
     environment:
       NODE_ENV: local
       NODE_URL: http://ae-node:3013
