@@ -9,7 +9,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@aeternity/aepp-sdk": "^4.5.1",
+    "@aeternity/aepp-sdk": "^5.0.0",
     "@danielwpz/health-check": "0.0.1",
     "chai": "^4.2.0",
     "deepmerge": "^4.0.0",
