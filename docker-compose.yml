@@ -1,4 +1,4 @@
-version: '2'
+version: '3'
 
 services:
   db:
@@ -8,43 +8,81 @@ services:
     ports:
       - 5432:5432
 
-  project-service:
-    image: ampnet/project-service:latest
-    environment:
-      - "spring.profiles.active=integration-test"
-    depends_on:
-       - db
-    ports:
-       - 8123:8123
+  # project-service:
+  #   image: ampnet/project-service:latest
+  #   environment:
+  #     - "spring.profiles.active=integration-test"
+  #   depends_on:
+  #      - db
+  #   ports:
+  #      - 8123:8123
 
-  wallet-service:
-    image: ampnet/wallet-service:latest
-    environment:
-      - "spring.profiles.active=integration-test"
-    depends_on:
-       - db
-    ports:
-       - 8128:8128
+  # wallet-service:
+  #   image: ampnet/wallet-service:latest
+  #   environment:
+  #     - "spring.profiles.active=integration-test"
+  #   depends_on:
+  #      - db
+  #   ports:
+  #      - 8128:8128
 
   blockchain-service:
-    image: ampnet/crowdfunding-ae-middleware:latest
+    image: ampnet/crowdfunding-ae-middleware:0.0.99
     environment:
-      NODE_ENV: testnet
+      NODE_ENV: local
+      NODE_URL: http://ae-node:3013
+      NODE_INTERNAL_URL: http://ae-node:3113
+      COMPILER_URL: http://sophia-compiler:3080
+      NETWORK_ID: ae_docker
       GIFT_AMOUNT: 0
+      DB_HOST: http://db
+      DB_PORT: 5432
+      DB_USER: ae_middleware_testnet
+      DB_PASSWORD: password
+      DB_NAME: ae_middleware_testnet
+    restart: on-failure:3
     depends_on:
       - db
+      - ae-node
+      - sophia-compiler
     ports:
       - 8124:8124
       - 8224:8224
 
-  user-service:
-    image: ampnet/crowdfunding-user-service:latest
+  # user-service:
+  #   image: ampnet/crowdfunding-user-service:latest
+  #   environment:
+  #     - "spring.profiles.active=integration-test"
+  #   depends_on:
+  #     - db
+  #   ports:
+  #     - 8125:8125
+
+  ae-node:
+    image: aeternity/aeternity:v5.0.0-rc.4
     environment:
-      - "spring.profiles.active=integration-test"
-    depends_on:
-      - db
+      AETERNITY_CONFIG: /home/aeternity/aeternity.yaml
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3013/v2/blocks/top"]
+      interval: 10s
+      timeout: 10s
+      retries: 5
+    volumes:
+      - ${PWD}/node/config/singlenode_mean15.yaml:/home/aeternity/aeternity.yaml
+      - ${PWD}/node/config/accounts_test.json:/home/aeternity/node/data/aecore/.genesis/accounts_test.json
+      - ${PWD}/node/keys/node1:/home/aeternity/node/keys
     ports:
-      - 8125:8125
+     - "3013:3013"
+     - "3113:3113"
+     - "3014:3014"
+
+  sophia-compiler:
+    image: aeternity/aesophia_http:v4.0.0
+    ports:
+       - "3080:3080"
+
+
+
   
 
 
