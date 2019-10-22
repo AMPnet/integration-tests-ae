@@ -14,6 +14,17 @@ let TestUser = require('./model/user').TestUser
 
 describe('Complete flow test', function () {
 
+    let keyPairs = {
+        bob: {
+            publicKey: "ak_FHZrEbRmanKUe9ECPXVNTLLpRP2SeQCLCT6Vnvs9JuVu78J7V",
+            secretKey: "1509d7d0e113528528b7ce4bf72c3a027bcc98656e46ceafcfa63e56597ec0d8206ff07f99ea517b7a028da8884fb399a2e3f85792fe418966991ba09b192c91"
+        },
+        alice: {
+            publicKey: "ak_RYkcTuYcyxQ6fWZsL2G3Kj3K5WCRUEXsi76bPUNkEsoHc52Wp",
+            secretKey: "58bd39ded1e3907f0b9c1fbaa4456493519995d524d168e0b04e86400f4aa13937bcec56026494dcf9b19061559255d78deea3281ac649ca307ead34346fa621"
+        }
+    }
+
     before(async () => {
         await docker.up()
         await ae.init()
@@ -74,11 +85,7 @@ describe('Complete flow test', function () {
         await admin.getJwtToken()
 
         // Create user Alice with wallet
-        let aliceKeypair = {
-            publicKey: 'ak_2RixP34RH4CtWQvy5TkKmxACjMYcvEjwPqxXz5V6kxHsuzhPD9',
-            secretKey: 'a03e0135c1d9a3352900f667b4dc57e688381cd34e72fa70e5aff30dadb37a77bbd560afdbc683ba818ac94b5893947e9977edd7ee92b659080c8f1658621618'
-        }
-        let alice = await TestUser.createRegular('alice@email.com', aliceKeypair)
+        let alice = await TestUser.createRegular('alice@email.com', keyPairs.alice)
         await createUserWithWallet(alice)
         await activateWallet(alice.walletUuid, admin)
 
@@ -89,11 +96,7 @@ describe('Complete flow test', function () {
         let projUuid = await createProjectWithWallet('Projekt', alice, orgUuid, admin)
 
         // Create user Bob with wallet and mint tokens
-        let bobKeypair = {
-            publicKey: 'ak_252DNaXH299yuTGA2Bmq6i6ZEtWEkSGxyQCFyk5WQKC3sWnxiM',
-            secretKey: 'b91ba1f0e4479194c10bd964610a394f02d8ecf693819e3767b65328a39152598cd37a40294e5fc7faaa7b469f447fc724d0a2b28dcdc167032dcd4a1d90d8af'
-        }
-        let bob = await TestUser.createRegular('bob@email.com', bobKeypair)
+        let bob = await TestUser.createRegular('bob@email.com', keyPairs.bob)
         let bobDepositAmount = 100000
         await createUserWithWallet(bob)
         await activateWallet(bob.walletUuid, admin)
