@@ -8,11 +8,10 @@ function sleep(ms) {
 
 async function init() {
     client = await Ae({
-        url: 'https://sdk-testnet.aepps.com/',
-        internalUrl: 'https://sdk-testnet.aepps.com',
+        url: 'http://localhost:3013',
+        internalUrl: 'http://localhost:3113',
         keypair: Crypto.generateKeyPair(),
-        networkId: 'ae_uat',
-        compilerUrl: 'https://compiler.aepps.com'
+        compilerUrl: 'http://localhost:3080'
     })
 }
 
