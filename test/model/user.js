@@ -25,11 +25,10 @@ class TestUser {
 
     async initClient() {
         this.client = await Ae({
-            url: 'https://sdk-testnet.aepps.com/',
-            internalUrl: 'https://sdk-testnet.aepps.com',
+            url: 'http://localhost:3013',
+            internalUrl: 'http://localhost:3113',
             keypair: this.keypair,
-            networkId: 'ae_uat',
-            compilerUrl: 'https://compiler.aepps.com'
+            compilerUrl: 'http://localhost:3080'
         })
     }
 

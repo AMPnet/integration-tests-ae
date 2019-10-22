@@ -67,31 +67,6 @@ describe('Complete flow test', function () {
         expect(user.uuid).to.equal(alice.uuid)
     })
 
-    it('Validate Wallet service connection to Project service', async () => {
-        // Get transaction to create organization wallet
-
-        // Create Admin
-        let admin = await TestUser.createAdmin('admin@email.com')
-        await db.insertUser(admin)
-        await admin.getJwtToken()
-
-        // Create user Alice with wallet
-        let aliceKeypair = {
-            publicKey: 'ak_2RixP34RH4CtWQvy5TkKmxACjMYcvEjwPqxXz5V6kxHsuzhPD9',
-            secretKey: 'a03e0135c1d9a3352900f667b4dc57e688381cd34e72fa70e5aff30dadb37a77bbd560afdbc683ba818ac94b5893947e9977edd7ee92b659080c8f1658621618'
-        }
-        let alice = await TestUser.createRegular('alice@email.com', aliceKeypair)
-        await createUserWithWallet(alice)
-        await activateWallet(alice.walletUuid, admin)
-
-        let orgName = 'TBD'
-        let orgUuid = await db.insertOrganization(orgName, alice)
-        await db.insertOrganizationMembership(alice, orgUuid)
-
-        let createOrgTx = await walletSvc.generateCreateOrgTx(alice, orgUuid)
-        expect(createOrgTx).to.not.be.undefined
-    })
-
     it('Must be able to execute complete flow', async () => {
         // Create Admin
         let admin = await TestUser.createAdmin('admin@email.com')
