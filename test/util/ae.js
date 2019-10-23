@@ -17,7 +17,7 @@ async function init() {
 }
 
 async function waitMined(txHash) {
-    let interval = 500 //ms
+    let interval = 1000 //ms
     let maxChecks = 10
     return new Promise(async (resolve) => {
         var attempts = 0
