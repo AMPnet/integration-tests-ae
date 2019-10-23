@@ -1,5 +1,5 @@
 let { Universal: Ae, Crypto } = require('@aeternity/aepp-sdk')
-
+let blockchainSvc = require('../service/blockchain-svc/blockchain-svc')
 let client
 
 function sleep(ms) {
@@ -13,17 +13,30 @@ async function init() {
         keypair: Crypto.generateKeyPair(),
         compilerUrl: 'http://localhost:3080'
     })
+    await blockchainSvc.init()
 }
 
 async function waitMined(txHash) {
+    let interval = 500 //ms
+    let maxChecks = 10
     return new Promise(async (resolve) => {
-        client.poll(txHash).then(async _ => {
-            client.getTxInfo(txHash).then(async (info) => {
-                console.log(`\nTransaction ${txHash} mined! Status: ${info.returnType}`)
-                await sleep(2000)
-                resolve()
-            })
-        })
+        var attempts = 0
+        var state = 'PENDING'
+        while(attempts < maxChecks) {
+            await sleep(interval)
+            info = await blockchainSvc.getTxInfo(txHash)
+            if (info.state != 'PENDING') { 
+                state = info.state
+                break
+            }
+            attempts++
+        }
+        if (state == 'PENDING') {
+            throw new Error(`Waiting for transaction ${txHash} to be mined timed out.`)
+        } else {
+            console.log(`Transaction ${txHash} processed. State: ${state}`)
+            resolve()
+        }
     })
 }
 
