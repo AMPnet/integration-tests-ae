@@ -20,7 +20,7 @@ async function waitMined(txHash) {
         client.poll(txHash).then(async _ => {
             client.getTxInfo(txHash).then(async (info) => {
                 console.log(`\nTransaction ${txHash} mined! Status: ${info.returnType}`)
-                await sleep(1000)
+                await sleep(2000)
                 resolve()
             })
         })
