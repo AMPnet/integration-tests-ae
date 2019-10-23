@@ -50,7 +50,7 @@ services:
       - 8224:8224
 
   user-service:
-    image: ampnet/crowdfunding-user-service:latest
+    image: ampnet/crowdfunding-user-service:0.5.0
     environment:
       - "spring.profiles.active=integration-test"
     depends_on:
