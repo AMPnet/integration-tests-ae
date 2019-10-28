@@ -49,12 +49,15 @@ async function insertUser(user) {
             address_county: 'county',
             address_street: 'street',
             created_at: new Date(),
-            connected: true
+            connected: true,
+            deactivated: false
         })
     
     await userDb('app_user')
         .insert({
             uuid: user.uuid,
+            first_name: 'First',
+            last_name: 'Last',
             email: user.email,
             password: user.passwordSalted,
             role_id: user.role,
