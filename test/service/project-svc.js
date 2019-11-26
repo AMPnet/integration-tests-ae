@@ -5,7 +5,13 @@ let qs = require('querystring')
 let baseUrl = "http://localhost:8123"
 
 async function getOrganizationMemberships(user, orgUuid) {
-    return (await axios.get(url.resolve(baseUrl, `organization/${orgUuid}/members`), getBearer(user.token))).data
+    return (
+        await axios
+            .get(url.resolve(baseUrl, `organization/${orgUuid}/members`), getBearer(user.token))
+            .catch(err => {
+                console.log(err.response)
+            })
+    ).data
 }
 
 function getBearer(token) {
