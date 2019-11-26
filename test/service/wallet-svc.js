@@ -5,9 +5,13 @@ let qs = require('querystring')
 let baseUrl = "http://localhost:8128"
 
 async function createUserWallet(user) {
-    return (await axios.post(url.resolve(baseUrl, "wallet"), {
-        public_key: user.keypair.publicKey
-    }, getBearer(user.token))).data
+    return (
+        await axios
+            .post(url.resolve(baseUrl, "wallet"), { public_key: user.keypair.publicKey }, getBearer(user.token))
+            .catch(err => {
+                console.log(err.response)
+            })
+    ).data
 }
 
 async function getUserWallet(user) {
@@ -15,39 +19,93 @@ async function getUserWallet(user) {
 }
 
 async function getOrganizationWallet(owner, orgUuid) {
-    return (await axios.get(url.resolve(baseUrl, `wallet/organization/${orgUuid}`), getBearer(owner.token))).data
+    return (
+        await axios
+            .get(url.resolve(baseUrl, `wallet/organization/${orgUuid}`), getBearer(owner.token))
+            .catch(err => {
+                console.log(err.response)
+            })
+    ).data
 }
 
 async function getProjectWallet(projUuid) {
-    return (await axios.get(url.resolve(baseUrl, `public/wallet/project/${projUuid}`))).data
+    return (
+        await axios
+            .get(url.resolve(baseUrl, `public/wallet/project/${projUuid}`))
+            .catch(err => {
+                console.log(err.response)
+            })
+    ).data
 }
 
 async function getUnactivatedUserWallets(admin) {
-    return (await axios.get(url.resolve(baseUrl, 'cooperative/wallet/user'), getBearer(admin.token))).data
+    return (
+        await axios
+            .get(url.resolve(baseUrl, 'cooperative/wallet/user'), getBearer(admin.token))
+            .catch(err => {
+                console.log(err.response)
+            })
+    ).data
 }
 
 async function getUnactivatedOrgWallets(admin) {
-    return (await axios.get(url.resolve(baseUrl, 'cooperative/wallet/organization'), getBearer(admin.token))).data
+    return (
+        await axios
+            .get(url.resolve(baseUrl, 'cooperative/wallet/organization'), getBearer(admin.token))
+            .catch(err => {
+                console.log(err.response)
+            })
+    ).data
 }
 
 async function getUnactivatedProjWallets(admin) {
-    return (await axios.get(url.resolve(baseUrl, 'cooperative/wallet/project'), getBearer(admin.token))).data
+    return (
+        await axios
+            .get(url.resolve(baseUrl, 'cooperative/wallet/project'), getBearer(admin.token))
+            .catch(err => {
+                console.log(err.response)
+            })
+    ).data
 }
 
 async function generateWalletActivationTx(admin, walletUuid) {
-    return (await axios.post(url.resolve(baseUrl, `cooperative/wallet/${walletUuid}/transaction`), {}, getBearer(admin.token))).data
+    return (
+        await axios
+            .post(url.resolve(baseUrl, `cooperative/wallet/${walletUuid}/transaction`), {}, getBearer(admin.token))
+            .catch(err => {
+                console.log(err.response)
+            })
+    ).data
 }
 
 async function generateCreateOrgTx(user, orgUuid) {
-    return (await axios.get(url.resolve(baseUrl, `wallet/organization/${orgUuid}/transaction`), getBearer(user.token))).data
+    return (
+        await axios
+            .get(url.resolve(baseUrl, `wallet/organization/${orgUuid}/transaction`), getBearer(user.token))
+            .catch(err => {
+                console.log(err.response)
+            })
+    ).data
 }
 
 async function generateCreateProjTx(user, projUuid) {
-    return (await axios.get(url.resolve(baseUrl, `wallet/project/${projUuid}/transaction`), getBearer(user.token))).data
+    return (
+        await axios
+            .get(url.resolve(baseUrl, `wallet/project/${projUuid}/transaction`), getBearer(user.token))
+            .catch(err => {
+                console.log(err.response)
+            })
+    ).data
 }
 
 async function generateMintTx(admin, depositId) {
-    return (await axios.post(url.resolve(baseUrl, `deposit/${depositId}/transaction`), {}, getBearer(admin.token))).data
+    return (
+        await axios
+            .post(url.resolve(baseUrl, `deposit/${depositId}/transaction`), {}, getBearer(admin.token))
+            .catch(err => {
+                console.log(err.response)
+            })
+    ).data
 }
 
 async function generateInvestTx(investor, projUuid, amount) {
