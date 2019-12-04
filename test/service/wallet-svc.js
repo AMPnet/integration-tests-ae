@@ -118,11 +118,9 @@ async function generateInvestTx(investor, projUuid, amount) {
 }
 
 async function broadcastTx(signedTx, txId) {
-    let params = qs.stringify({
-        tx_sig: signedTx,
-        tx_id: txId
-    })
-    return (await axios.post(url.resolve(baseUrl, 'tx_broadcast'), params, getUrlEncodedContentType())).data
+    return (await axios.post(
+        url.resolve(baseUrl, 'tx_broadcast'), { tx_sig: signedTx, tx_id: txId })
+    ).data
 }
 
 function getBearer(token) {
