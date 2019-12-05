@@ -13,6 +13,6 @@ GRANT ALL PRIVILEGES ON DATABASE ae_middleware_testnet TO ae_middleware_testnet;
 
 CREATE DATABASE ae_middleware_testnet_queue ENCODING 'UTF-8';
 CREATE USER ae_middleware_testnet_queue WITH PASSWORD 'password';
-GRANT ALL PRIVILEGES ON DATABASE ae_middleware_testnet_queue TO ae_middleware_testnet_queue;
 \connect ae_middleware_testnet_queue
 CREATE EXTENSION pgcrypto;
+GRANT ALL PRIVILEGES ON DATABASE ae_middleware_testnet_queue TO ae_middleware_testnet_queue;

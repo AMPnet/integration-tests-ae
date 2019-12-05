@@ -139,7 +139,7 @@ describe('Complete flow test', function () {
         let createOrgTxHash = await walletSvc.broadcastTx(signedCreateOrgTx, createOrgTx.tx_id)
         expect(createOrgTxHash.tx_hash).to.not.be.undefined
 
-        await ae.waitMined(createOrgTxHash.tx_hash).catch(err => { fail(err) })
+        await ae.waitTxProcessed(createOrgTxHash.tx_hash).catch(err => { fail(err) })
         
         let unactivatedOrgWallets = await walletSvc.getUnactivatedOrgWallets(admin)
         expect(unactivatedOrgWallets.organizations).to.have.lengthOf(1)
@@ -158,7 +158,7 @@ describe('Complete flow test', function () {
         let signedCreateProjTx = await owner.client.signTransaction(createProjTx.tx)
         let createProjTxHash = await walletSvc.broadcastTx(signedCreateProjTx, createProjTx.tx_id)
 
-        await ae.waitMined(createProjTxHash.tx_hash).catch(err => { fail(err) })
+        await ae.waitTxProcessed(createProjTxHash.tx_hash).catch(err => { fail(err) })
 
         let unactivatedProjWallets = await walletSvc.getUnactivatedProjWallets(admin)
         expect(unactivatedProjWallets.projects).to.have.lengthOf(1)
@@ -176,7 +176,7 @@ describe('Complete flow test', function () {
         let walletActivationTxHash = await walletSvc.broadcastTx(signedWalletActivationTx, walletActivationTx.tx_id)
         expect(walletActivationTxHash.tx_hash).to.not.be.undefined
 
-        await ae.waitMined(walletActivationTxHash.tx_hash).catch(err => { fail(err) })
+        await ae.waitTxProcessed(walletActivationTxHash.tx_hash).catch(err => { fail(err) })
     }
 
     async function mint(user, amount, admin) {
@@ -185,7 +185,7 @@ describe('Complete flow test', function () {
         let mintTxSigned = await admin.client.signTransaction(mintTx.tx)
         let mintTxHash = await walletSvc.broadcastTx(mintTxSigned, mintTx.tx_id)
 
-        await ae.waitMined(mintTxHash.tx_hash).catch(err => { fail(err) })
+        await ae.waitTxProcessed(mintTxHash.tx_hash).catch(err => { fail(err) })
     }
 
     async function invest(investor, projUuid, amount) {
@@ -193,7 +193,7 @@ describe('Complete flow test', function () {
         let investTxSigned = await investor.client.signTransaction(investTx.tx)
         let investTxHash = await walletSvc.broadcastTx(investTxSigned, investTx.tx_id)
 
-        await ae.waitMined(investTxHash.tx_hash).catch(err => { fail(err) })
+        await ae.waitTxProcessed(investTxHash.tx_hash).catch(err => { fail(err) })
     }
 
     after(async() => {
