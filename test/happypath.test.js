@@ -110,10 +110,6 @@ describe('Complete flow test', function () {
         let bobInvestAmount = 100000
         await invest(bob, projUuid, bobInvestAmount)
 
-        // Assert that investment was transferred to project wallet
-        console.log("Sleeping 5 seconds")
-        await time.sleep(5000)
-
         let projectBalance = (await walletSvc.getProjectWallet(projUuid)).balance
         expect(projectBalance).to.equal(bobInvestAmount)
     })
