@@ -52,7 +52,6 @@ function waitTxProcessed(txHash) {
         while(attempts < maxChecks) {
             await sleep(interval)
             info = await blockchainSvc.getTxInfo(txHash)
-            console.log("info", info)
             if (info.state != pendingState && info.supervisorStatus != requiredState) { 
                 txState = info.state
                 supervisorState = info.supervisorStatus
