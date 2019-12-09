@@ -34,12 +34,16 @@ services:
       NODE_INTERNAL_URL: http://ae-node:3113
       COMPILER_URL: http://sophia-compiler:3080
       NETWORK_ID: ae_docker
-      GIFT_AMOUNT: 0
       DB_HOST: db
       DB_PORT: 5432
       DB_USER: ae_middleware_testnet
       DB_PASSWORD: password
       DB_NAME: ae_middleware_testnet
+      QUEUE_DB_HOST: db
+      QUEUE_DB_PORT: 5432
+      QUEUE_DB_USER: ae_middleware_testnet_queue
+      QUEUE_DB_PASSWORD: password
+      QUEUE_DB_NAME: ae_middleware_testnet_queue
     restart: always
     depends_on:
       - db
@@ -75,10 +79,3 @@ services:
     image: aeternity/aesophia_http:v4.0.0
     ports:
        - "3080:3080"
-
-
-
-  
-
-
-  
