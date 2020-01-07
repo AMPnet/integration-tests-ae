@@ -42,7 +42,7 @@ async function waitMined(txHash) {
 
 function waitTxProcessed(txHash) {
     return new Promise(async (resolve) => {
-        let interval = 1000 //ms
+        let interval = 3000 //ms
         let maxChecks = 50
         var attempts = 0
         let pendingState = "PENDING"
