@@ -16,7 +16,7 @@
     "docker-compose": "^0.21.0",
     "knex": "^0.19.2",
     "mocha": "^6.2.0",
-    "pg": "^7.12.1",
+    "pg": "^7.17.1",
     "querystring": "^0.2.0",
     "uuid": "^3.3.3",
     "@grpc/proto-loader": "^0.5.3",
