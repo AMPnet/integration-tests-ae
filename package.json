@@ -14,7 +14,7 @@
     "chai": "^4.2.0",
     "deepmerge": "^4.0.0",
     "docker-compose": "^0.23.2",
-    "knex": "^0.19.2",
+    "knex": "^0.19.5",
     "mocha": "^6.2.0",
     "pg": "^7.17.1",
     "querystring": "^0.2.0",
