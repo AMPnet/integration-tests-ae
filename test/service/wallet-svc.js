@@ -117,6 +117,15 @@ async function generateInvestTx(investor, projUuid, amount) {
     })).data
 }
 
+async function generateCancelInvestmentsTx(investor, projectUuid) {
+    return (await axios.get(
+        url.resolve(baseUrl, `invest/project/${projectUuid}/cancel`),
+        getBearer(investor.token)
+    ).catch(err => {
+        console.log(err)
+    })).data
+}
+
 async function broadcastTx(signedTx, txId) {
     return (await axios.post(
         url.resolve(baseUrl, 'tx_broadcast'), { tx_sig: signedTx, tx_id: txId })
@@ -127,14 +136,6 @@ function getBearer(token) {
     return {
         headers: {
             Authorization: `Bearer ${token}`
-        }
-    }
-}
-
-function getUrlEncodedContentType() {
-    return {
-        headers: {
-            'Content-Type': 'application/x-www-form-urlencoded'
         }
     }
 }
@@ -152,5 +153,6 @@ module.exports = {
     generateCreateProjTx,
     generateMintTx,
     generateInvestTx,
+    generateCancelInvestmentsTx,
     broadcastTx
 }
