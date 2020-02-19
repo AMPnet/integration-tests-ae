@@ -22,6 +22,10 @@ describe('Complete flow test', function () {
         alice: {
             publicKey: "ak_RYkcTuYcyxQ6fWZsL2G3Kj3K5WCRUEXsi76bPUNkEsoHc52Wp",
             secretKey: "58bd39ded1e3907f0b9c1fbaa4456493519995d524d168e0b04e86400f4aa13937bcec56026494dcf9b19061559255d78deea3281ac649ca307ead34346fa621"
+        },
+        eve: {
+            publicKey: "ak_nN1V2bBR3sWBM6h5waLJf8LdfPHJRU5zuASsyVVzNBdSHk5w5",
+            secretKey: "b46d0dbb1d90be3f1bb6cb293d0feda2033b45b322db7d4915790548ed77711067001db0addd573717fad2ac34a3ec59e8f45c84aeb62a576b02a37e39af0205"
         }
     }
 
@@ -112,6 +116,26 @@ describe('Complete flow test', function () {
 
         let projectBalance = (await walletSvc.getProjectWallet(projUuid)).balance
         expect(projectBalance).to.equal(bobInvestAmount)
+
+        // Create user Eve with wallet and mint tokens
+        let eve = await TestUser.createRegular('eve@email.com', keyPairs.eve)
+        let eveDepositAmount = 50000
+        await createUserWithWallet(eve)
+        await activateWallet(eve.walletUuid, admin)
+        await mint(eve, eveDepositAmount, admin)
+
+        // Eve invests twice in Alice's project
+        await invest(eve, projUuid, eveDepositAmount / 2)
+        await invest(eve, projUuid, eveDepositAmount / 2)
+        projectBalance = (await walletSvc.getProjectWallet(projUuid)).balance
+        expect(projectBalance).to.equal(bobInvestAmount + eveDepositAmount)
+
+        // Eve cancels investment in Alice's project
+        await cancelInvestments(eve, projUuid)
+        projectBalance = (await walletSvc.getProjectWallet(projUuid)).balance
+        expect(projectBalance).to.equal(bobInvestAmount)
+        let eveBalance = (await walletSvc.getUserWallet(eve)).balance
+        expect(eveBalance).to.equal(eveDepositAmount)
     })
 
     async function createUserWithWallet(user) {
@@ -190,6 +214,14 @@ describe('Complete flow test', function () {
         let investTxHash = await walletSvc.broadcastTx(investTxSigned, investTx.tx_id)
 
         await ae.waitTxProcessed(investTxHash.tx_hash).catch(err => { fail(err) })
+    }
+
+    async function cancelInvestments(investor, projectUuid) {
+        let cancelTx = await walletSvc.generateCancelInvestmentsTx(investor, projectUuid)
+        let cancelTxSigned = await investor.client.signTransaction(cancelTx.tx)
+        let cancelTxHash = await walletSvc.broadcastTx(cancelTxSigned, cancelTx.tx_id)
+
+        await ae.waitTxProcessed(cancelTxHash.tx_hash).catch(err => { fail(err) })
     }
 
     after(async() => {
