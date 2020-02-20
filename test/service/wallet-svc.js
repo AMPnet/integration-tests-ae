@@ -126,6 +126,27 @@ async function generateCancelInvestmentsTx(investor, projectUuid) {
     })).data
 }
 
+async function generateWithdrawTx(user, withdrawId) {
+    return (await axios.post(
+        url.resolve(baseUrl, `withdraw/${withdrawId}/transaction/approve`),
+        {},
+        getBearer(user.token)
+    ).catch(err => {
+        console.log(err)
+    })).data
+}
+
+// TODO: change path: cooperative/withdraw
+async function generateBurnTx(admin, withdrawId) {
+    return (await axios.post(
+        url.resolve(baseUrl, `withdraw/${withdrawId}/transaction/burn`),
+        {},
+        getBearer(admin.token)
+    ).catch(err => {
+        console.log(err)
+    })).data
+}
+
 async function broadcastTx(signedTx, txId) {
     return (await axios.post(
         url.resolve(baseUrl, 'tx_broadcast'), { tx_sig: signedTx, tx_id: txId })
@@ -154,5 +175,7 @@ module.exports = {
     generateMintTx,
     generateInvestTx,
     generateCancelInvestmentsTx,
+    generateWithdrawTx,
+    generateBurnTx,
     broadcastTx
 }

@@ -136,6 +136,22 @@ async function insertDeposit(user, amount) {
     return id
 }
 
+// TODO: change withdraw model
+async function insertWithdraw(ownerUuid, user, amount, type) {
+    let id = getRandomInt()
+    await walletDb('withdraw')
+        .insert({
+            id: id,
+            user_uuid: ownerUuid,
+            amount: amount,
+            created_at: new Date(),
+            // created_by: user.uuid,
+            bank_account: 'HR1210010051863000160'
+            // type: type
+        })
+    return id
+}
+
 function getConfig(db) {
     return {
         client: 'postgresql',
@@ -169,5 +185,6 @@ module.exports = {
     insertOrganization,
     insertOrganizationMembership,
     insertProject,
-    insertDeposit
+    insertDeposit,
+    insertWithdraw
 }
