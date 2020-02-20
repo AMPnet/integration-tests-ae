@@ -136,6 +136,12 @@ describe('Complete flow test', function () {
         expect(projectBalance).to.equal(bobInvestAmount)
         let eveBalance = (await walletSvc.getUserWallet(eve)).balance
         expect(eveBalance).to.equal(eveDepositAmount)
+
+        //Eve can withdraw funds
+        let withdrawId = await(withdrawFunds(eve.uuid, eve, eveDepositAmount, 'USER'))
+        await burnWithdraw(admin, withdrawId)
+        eveBalance = (await walletSvc.getUserWallet(eve)).balance
+        expect(eveBalance).to.equal(0)
     })
 
     async function createUserWithWallet(user) {
@@ -222,6 +228,24 @@ describe('Complete flow test', function () {
         let cancelTxHash = await walletSvc.broadcastTx(cancelTxSigned, cancelTx.tx_id)
 
         await ae.waitTxProcessed(cancelTxHash.tx_hash).catch(err => { fail(err) })
+    }
+
+    async function withdrawFunds(ownerUuid, user, amount, type) {
+        let withdrawId = await db.insertWithdraw(ownerUuid, user, amount, type)
+        let withdrawTx = await walletSvc.generateWithdrawTx(user, withdrawId)
+        let signedWithdrawTx = await user.client.signTransaction(withdrawTx.tx)
+        let withdrawTxHash = await walletSvc.broadcastTx(signedWithdrawTx, withdrawTx.tx_id)
+
+        await ae.waitTxProcessed(withdrawTxHash.tx_hash).catch(err => { fail(err) })
+        return withdrawId
+    }
+
+    async function burnWithdraw(admin, withdrawId) {
+        let burnTx = await walletSvc.generateBurnTx(admin, withdrawId)
+        let signedBurnTx = await admin.client.signTransaction(burnTx.tx)
+        let burnTxHash = await walletSvc.broadcastTx(signedBurnTx, burnTx.tx_id)
+
+        await ae.waitTxProcessed(burnTxHash.tx_hash).catch(err => { fail(err) })
     }
 
     after(async() => {
