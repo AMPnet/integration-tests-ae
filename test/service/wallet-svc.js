@@ -136,10 +136,9 @@ async function generateWithdrawTx(user, withdrawId) {
     })).data
 }
 
-// TODO: change path: cooperative/withdraw
 async function generateBurnTx(admin, withdrawId) {
     return (await axios.post(
-        url.resolve(baseUrl, `withdraw/${withdrawId}/transaction/burn`),
+        url.resolve(baseUrl, `cooperative/withdraw/${withdrawId}/transaction/burn`),
         {},
         getBearer(admin.token)
     ).catch(err => {

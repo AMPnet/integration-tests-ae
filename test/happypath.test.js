@@ -101,7 +101,7 @@ describe('Complete flow test', function () {
 
         // Create user Bob with wallet and mint tokens
         let bob = await TestUser.createRegular('bob@email.com', keyPairs.bob)
-        let bobDepositAmount = 100000
+        let bobDepositAmount = 1000000
         await createUserWithWallet(bob)
         await activateWallet(bob.walletUuid, admin)
         await mint(bob, bobDepositAmount, admin)
@@ -142,6 +142,17 @@ describe('Complete flow test', function () {
         await burnWithdraw(admin, withdrawId)
         eveBalance = (await walletSvc.getUserWallet(eve)).balance
         expect(eveBalance).to.equal(0)
+
+        // Bob fully funds the project
+        await invest(bob, projUuid, bobDepositAmount - bobInvestAmount)
+        projectBalance = (await walletSvc.getProjectWallet(projUuid)).balance
+        expect(projectBalance).to.equal(bobDepositAmount)
+
+        // Project can withdraw the funds
+        let projectWithdrawId = await(withdrawFunds(projUuid, alice, bobDepositAmount, 'PROJECT'))
+        await burnWithdraw(admin, projectWithdrawId)
+        projectBalance = (await walletSvc.getProjectWallet(projUuid)).balance
+        expect(projectBalance).to.equal(0)
     })
 
     async function createUserWithWallet(user) {
