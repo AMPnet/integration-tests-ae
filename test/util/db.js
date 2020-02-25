@@ -120,18 +120,20 @@ async function insertProject(name, owner, orgUuid) {
     return generatedUuid
 }
 
-async function insertDeposit(user, amount) {
+async function insertDeposit(ownerUuid, userUuid, amount, type) {
     let id = getRandomInt()
     await walletDb('deposit')
         .insert({
             id: id,
-            user_uuid: user.uuid,
+            owner_uuid: ownerUuid,
             reference: 'reference',
             amount: amount,
             approved: true,
-            approved_by_user_uuid: user.uuid,
+            approved_by_user_uuid: userUuid,
             approved_at: new Date(),
-            created_at: new Date()
+            created_at: new Date(),
+            created_by: userUuid,
+            type: type
         })
     return id
 }
