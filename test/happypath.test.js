@@ -104,7 +104,7 @@ describe('Complete flow test', function () {
         let bobDepositAmount = 1000000
         await createUserWithWallet(bob)
         await activateWallet(bob.walletUuid, admin)
-        await mint(bob, bobDepositAmount, admin)
+        await mint(bob.uuid, bob.uuid, bobDepositAmount, 'USER', admin)
 
         // Check bob balance
         let bobBalance = (await walletSvc.getUserWallet(bob)).balance
@@ -122,7 +122,7 @@ describe('Complete flow test', function () {
         let eveDepositAmount = 50000
         await createUserWithWallet(eve)
         await activateWallet(eve.walletUuid, admin)
-        await mint(eve, eveDepositAmount, admin)
+        await mint(eve.uuid, eve.uuid, eveDepositAmount, 'USER', admin)
 
         // Eve invests twice in Alice's project
         await invest(eve, projUuid, eveDepositAmount / 2)
@@ -153,6 +153,12 @@ describe('Complete flow test', function () {
         await burnWithdraw(admin, projectWithdrawId)
         projectBalance = (await walletSvc.getProjectWallet(projUuid)).balance
         expect(projectBalance).to.equal(0)
+
+        // Project can deposit funds
+        let projectDepositAmount = 1000000
+        await mint(projUuid, alice.uuid, projectDepositAmount, 'PROJECT', admin)
+        projectBalance = (await walletSvc.getProjectWallet(projUuid)).balance
+        expect(projectBalance).to.equal(projectDepositAmount)
     })
 
     async function createUserWithWallet(user) {
@@ -216,8 +222,8 @@ describe('Complete flow test', function () {
         await ae.waitTxProcessed(walletActivationTxHash.tx_hash).catch(err => { fail(err) })
     }
 
-    async function mint(user, amount, admin) {
-        let depositId = await db.insertDeposit(user, amount)
+    async function mint(ownerUuid, userUuid, amount, type, admin) {
+        let depositId = await db.insertDeposit(ownerUuid, userUuid, amount, type)
         let mintTx = await walletSvc.generateMintTx(admin, depositId)
         let mintTxSigned = await admin.client.signTransaction(mintTx.tx)
         let mintTxHash = await walletSvc.broadcastTx(mintTxSigned, mintTx.tx_id)

@@ -101,7 +101,7 @@ async function generateCreateProjTx(user, projUuid) {
 async function generateMintTx(admin, depositId) {
     return (
         await axios
-            .post(url.resolve(baseUrl, `deposit/${depositId}/transaction`), {}, getBearer(admin.token))
+            .post(url.resolve(baseUrl, `/cooperative/deposit/${depositId}/transaction`), {}, getBearer(admin.token))
             .catch(err => {
                 console.log(err.response)
             })
