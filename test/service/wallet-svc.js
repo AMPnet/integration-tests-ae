@@ -109,8 +109,9 @@ async function generateMintTx(admin, depositId) {
 }
 
 async function generateInvestTx(investor, projUuid, amount) {
-    return (await axios.get(
-        url.resolve(baseUrl, `invest/project/${projUuid}?amount=${amount}`),
+    return (await axios.post(
+        url.resolve(baseUrl, `invest/project/${projUuid}`),
+        { amount: amount },
         getBearer(investor.token)
     ).catch(err => {
         console.log(err)
@@ -118,8 +119,9 @@ async function generateInvestTx(investor, projUuid, amount) {
 }
 
 async function generateCancelInvestmentsTx(investor, projectUuid) {
-    return (await axios.get(
+    return (await axios.post(
         url.resolve(baseUrl, `invest/project/${projectUuid}/cancel`),
+        {},
         getBearer(investor.token)
     ).catch(err => {
         console.log(err)
