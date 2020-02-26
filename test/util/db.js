@@ -16,6 +16,9 @@ async function cleanProject() {
 
 async function cleanWallet() {
     await walletDb.raw('TRUNCATE TABLE wallet CASCADE')
+    await walletDb.raw('DELETE FROM deposit')
+    await walletDb.raw('DELETE FROM withdraw')
+    await walletDb.raw('DELETE FROM transaction_info')
 }
 
 async function cleanBlockchain() {

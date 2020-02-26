@@ -146,6 +146,16 @@ async function generateBurnTx(admin, withdrawId) {
     })).data
 }
 
+async function generateRevenuePayoutTx(admin, projectUuid, amount) {
+    return (await axios.post(
+        url.resolve(baseUrl, `revenue/payout/project/${projectUuid}`),
+        { amount: amount },
+        getBearer(admin.token)
+    ).catch(err => {
+        console.log(err)
+    })).data
+}
+
 async function broadcastTx(signedTx, txId) {
     return (await axios.post(
         url.resolve(baseUrl, 'tx_broadcast'), { tx_sig: signedTx, tx_id: txId })
@@ -176,5 +186,6 @@ module.exports = {
     generateCancelInvestmentsTx,
     generateWithdrawTx,
     generateBurnTx,
+    generateRevenuePayoutTx,
     broadcastTx
 }

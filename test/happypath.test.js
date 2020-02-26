@@ -159,6 +159,13 @@ describe('Complete flow test', function () {
         await mint(projUuid, alice.uuid, projectDepositAmount, 'PROJECT', admin)
         projectBalance = (await walletSvc.getProjectWallet(projUuid)).balance
         expect(projectBalance).to.equal(projectDepositAmount)
+
+        // Project can payout revenue shares to investors
+        await revenuePayout(alice, projUuid, projectDepositAmount)
+        projectBalance = (await walletSvc.getProjectWallet(projUuid)).balance
+        expect(projectBalance).to.equal(0)
+        let investorBalance = (await walletSvc.getUserWallet(bob)).balance
+        expect(investorBalance).to.equal(projectDepositAmount)
     })
 
     async function createUserWithWallet(user) {
@@ -263,6 +270,14 @@ describe('Complete flow test', function () {
         let burnTxHash = await walletSvc.broadcastTx(signedBurnTx, burnTx.tx_id)
 
         await ae.waitTxProcessed(burnTxHash.tx_hash).catch(err => { fail(err) })
+    }
+
+    async function revenuePayout(admin, projectUuid, amount) {
+        let revenuePayoutTx = await walletSvc.generateRevenuePayoutTx(admin, projectUuid, amount)
+        let signedRevenuePayoutTx = await admin.client.signTransaction(revenuePayoutTx.tx)
+        let revenuePayoutTxHash = await walletSvc.broadcastTx(signedRevenuePayoutTx, revenuePayoutTx.tx_id)
+
+        await ae.waitTxProcessed(revenuePayoutTxHash.tx_hash).catch(err => { fail(err) })
     }
 
     after(async() => {
