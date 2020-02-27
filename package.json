@@ -15,7 +15,7 @@
     "deepmerge": "^4.2.2",
     "docker-compose": "^0.23.2",
     "knex": "^0.20.10",
-    "mocha": "^7.0.1",
+    "mocha": "^7.1.0",
     "pg": "^7.18.1",
     "querystring": "^0.2.0",
     "uuid": "^7.0.0",
