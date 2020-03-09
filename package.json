@@ -13,7 +13,7 @@
     "@danielwpz/health-check": "0.0.1",
     "chai": "^4.2.0",
     "deepmerge": "^4.2.2",
-    "docker-compose": "^0.23.2",
+    "docker-compose": "^0.23.3",
     "knex": "^0.20.11",
     "mocha": "^7.1.0",
     "pg": "^7.18.1",
