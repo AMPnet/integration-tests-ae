@@ -1,4 +1,4 @@
-let { Universal: Ae, Crypto } = require('@aeternity/aepp-sdk')
+let { Universal: Ae, Crypto, Node, MemoryAccount } = require('@aeternity/aepp-sdk')
 let uuid = require('uuid/v4')
 
 let userSvc = require('../service/user-svc')
@@ -24,11 +24,21 @@ class TestUser {
     }
 
     async initClient() {
-        this.client = await Ae({
+        let node = await Node({
             url: 'http://localhost:3013',
-            internalUrl: 'http://localhost:3113',
-            keypair: this.keypair,
-            compilerUrl: 'http://localhost:3080'
+            internalUrl: 'http://localhost:3113'
+        })
+
+        this.client = await Ae({
+            nodes: [
+                { name: "node", instance: node } 
+            ],
+            compilerUrl: 'http://localhost:3080',
+            accounts: [
+                MemoryAccount({ keypair: this.keypair })
+            ],
+            address: this.keypair.publicKey,
+            networkId: 'ae_devnet'
         })
     }
 
