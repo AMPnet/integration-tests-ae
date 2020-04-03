@@ -30,7 +30,7 @@ describe('Complete flow test', function () {
     }
 
     before(async () => {
-        // await docker.up()
+        await docker.up()
         await ae.init()
     })
 
@@ -81,13 +81,6 @@ describe('Complete flow test', function () {
         let user = unactivatedUserWallets.users[0].user
         expect(user.uuid).to.equal(alice.uuid)
     })
-
-    /*
-    user uuid: 41997f44-bf84-4ee2-aaec-e2689210edfa
-    org uuid: bbdb7554-9b82-4e8a-a6f3-2c80e6fedf47
-
-
-    */
 
     it('Must be able to execute complete flow', async () => {
         // Create Admin
@@ -288,7 +281,7 @@ describe('Complete flow test', function () {
     }
 
     after(async() => {
-        // await docker.down()
+        await docker.down()
     })
 
 })

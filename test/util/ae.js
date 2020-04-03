@@ -23,7 +23,7 @@ async function init() {
             MemoryAccount({ keypair: keypair })
         ],
         address: keypair.publicKey,
-        networkId: 'ae_devnet'
+        networkId: 'ae_docker'
     })
 
     await blockchainSvc.init()

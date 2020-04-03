@@ -1,5 +1,5 @@
 let { Universal: Ae, Crypto, Node, MemoryAccount } = require('@aeternity/aepp-sdk')
-let uuid = require('uuid/v4')
+let { v4: uuid } = require('uuid')
 
 let userSvc = require('../service/user-svc')
 
@@ -38,7 +38,7 @@ class TestUser {
                 MemoryAccount({ keypair: this.keypair })
             ],
             address: this.keypair.publicKey,
-            networkId: 'ae_devnet'
+            networkId: 'ae_docker'
         })
     }
 

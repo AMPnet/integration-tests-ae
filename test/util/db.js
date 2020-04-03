@@ -1,6 +1,6 @@
 let knex = require('knex')
 let time = require('./time')
-let uuid = require('uuid/v4')
+let { v4: uuid } = require('uuid')
 
 let blockchainDb    = knex(getConfig("ae_middleware_testnet"))
 let userDb          = knex(getConfig("user_service"))
