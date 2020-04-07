@@ -192,17 +192,17 @@ describe('Complete flow test', function () {
         await ae.waitTxProcessed(tokenIssuerTxHash.tx_hash).catch(err => { fail(err) })
 
         // Verify Admin is now Platform Manager
-        let adminResponse = userSvc.getProfile(admin)
+        let adminResponse = await userSvc.getProfile(admin)
         console.log("Admin response: ", adminResponse)
         if (adminResponse.role == "ADMIN") {
             await sleep(6000)
-            adminResponse = userSvc.getProfile(admin)
+            adminResponse = await userSvc.getProfile(admin)
             console.log("Admin response: ", adminResponse)
         }
         expect(adminResponse.role).to.equal("PLATFORM_MANAGER")
 
         // Verify Alice is now Token Issuer
-        let aliceResponse = userSvc.getProfile(alice)
+        let aliceResponse = await userSvc.getProfile(alice)
         console.log("Alice response: ", aliceResponse)
         expect(aliceResponse.role).to.equal("TOKEN_ISSUER")
     })
