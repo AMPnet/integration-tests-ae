@@ -1,6 +1,5 @@
 let axios = require('axios')
 let url = require('url')
-let qs = require('querystring')
 
 let baseUrl = "http://localhost:8123"
 

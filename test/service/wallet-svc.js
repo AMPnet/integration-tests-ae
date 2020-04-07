@@ -1,6 +1,5 @@
 let axios = require('axios')
 let url = require('url')
-let qs = require('querystring')
 
 let baseUrl = "http://localhost:8128"
 
@@ -158,6 +157,16 @@ async function generateRevenuePayoutTx(admin, projectUuid, amount) {
     })).data
 }
 
+async function generateTransferWalletTx(admin, walletAddress, type) {
+    return (await axios.post(
+        url.resolve(baseUrl, `cooperative/wallet/transfer/transaction`),
+        { wallet_address: walletAddress, type: type },
+        getBearer(admin.token)
+    ).catch(err => {
+        console.log(err)
+    })).data
+}
+
 async function broadcastTx(signedTx, txId) {
     return (await axios.post(
         url.resolve(baseUrl, 'tx_broadcast'), { tx_sig: signedTx, tx_id: txId })
@@ -189,5 +198,6 @@ module.exports = {
     generateWithdrawTx,
     generateBurnTx,
     generateRevenuePayoutTx,
+    generateTransferWalletTx,
     broadcastTx
 }

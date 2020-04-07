@@ -1,14 +1,13 @@
 let chai = require('chai')
-let assert = chai.assert
 let expect = chai.expect
 
 let docker = require('./util/docker')
 let db = require('./util/db')
 let ae = require('./util/ae')
-let time = require('./util/time')
 
 let projectSvc = require('./service/project-svc')
 let walletSvc = require('./service/wallet-svc')
+let userSvc = require('./service/user-svc')
 
 let TestUser = require('./model/user').TestUser
 
@@ -82,7 +81,7 @@ describe('Complete flow test', function () {
         expect(user.uuid).to.equal(alice.uuid)
     })
 
-    it('Must be able to execute complete flow', async () => {
+    it.skip('Must be able to execute complete flow', async () => {
         // Create Admin
         let admin = await TestUser.createAdmin('admin@email.com')
         await db.insertUser(admin)
@@ -166,6 +165,46 @@ describe('Complete flow test', function () {
         expect(projectBalance).to.equal(0)
         let investorBalance = (await walletSvc.getUserWallet(bob)).balance
         expect(investorBalance).to.equal(projectDepositAmount)
+    })
+
+    it("Admin must be able to set new token issuer", async() => {
+        // Create Admin
+        let admin = await TestUser.createAdmin('admin@email.com')
+        await db.insertUser(admin)
+        await admin.getJwtToken()
+        console.log("Created admin")
+
+        // Create user Alice with wallet
+        let alice = await TestUser.createRegular('alice@email.com', keyPairs.alice)
+        await createUserWithWallet(alice)
+        await activateWallet(alice.walletUuid, admin)
+        console.log("Created alice")
+
+        // Set Alice as token issuer
+        console.log("Token issuer address: ", alice.keypair.publicKey)
+        let tokenIssuerTx = await walletSvc.generateTransferWalletTx(admin, alice.keypair.publicKey, "TOKEN_ISSUER")
+        console.log("Received token issuer transaction:", tokenIssuerTx)
+        let signedTokenIssuerTx = await admin.client.signTransaction(tokenIssuerTx.tx)
+        console.log("Signed transaction")
+        let tokenIssuerTxHash = await walletSvc.broadcastTx(signedTokenIssuerTx, tokenIssuerTx.tx_id)
+        console.log("Broadcasted transaction")
+        expect(tokenIssuerTxHash.tx_hash).to.not.be.undefined
+        await ae.waitTxProcessed(tokenIssuerTxHash.tx_hash).catch(err => { fail(err) })
+
+        // Verify Admin is now Platform Manager
+        let adminResponse = userSvc.getProfile(admin)
+        console.log("Admin response: ", adminResponse)
+        if (adminResponse.role == "ADMIN") {
+            await sleep(6000)
+            adminResponse = userSvc.getProfile(admin)
+            console.log("Admin response: ", adminResponse)
+        }
+        expect(adminResponse.role).to.equal("PLATFORM_MANAGER")
+
+        // Verify Alice is now Token Issuer
+        let aliceResponse = userSvc.getProfile(alice)
+        console.log("Alice response: ", aliceResponse)
+        expect(aliceResponse.role).to.equal("TOKEN_ISSUER")
     })
 
     async function createUserWithWallet(user) {
@@ -281,7 +320,7 @@ describe('Complete flow test', function () {
     }
 
     after(async() => {
-        await docker.down()
+        // await docker.down()
     })
 
 })
