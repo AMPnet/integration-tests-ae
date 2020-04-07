@@ -82,4 +82,4 @@ function waitTxProcessed(txHash) {
     })
 }
 
-module.exports = { init, waitMined, waitTxProcessed }
+module.exports = { init, waitMined, waitTxProcessed, sleep }

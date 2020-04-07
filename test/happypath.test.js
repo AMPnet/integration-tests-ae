@@ -81,7 +81,7 @@ describe('Complete flow test', function () {
         expect(user.uuid).to.equal(alice.uuid)
     })
 
-    it.skip('Must be able to execute complete flow', async () => {
+    it('Must be able to execute complete flow', async () => {
         // Create Admin
         let admin = await TestUser.createAdmin('admin@email.com')
         await db.insertUser(admin)
@@ -172,38 +172,32 @@ describe('Complete flow test', function () {
         let admin = await TestUser.createAdmin('admin@email.com')
         await db.insertUser(admin)
         await admin.getJwtToken()
-        console.log("Created admin")
+        let wallet = await walletSvc.createUserWallet(admin)
+        expect(wallet).to.not.be.undefined
+        admin.setWalletUuid(wallet.uuid)
 
         // Create user Alice with wallet
         let alice = await TestUser.createRegular('alice@email.com', keyPairs.alice)
         await createUserWithWallet(alice)
         await activateWallet(alice.walletUuid, admin)
-        console.log("Created alice")
 
         // Set Alice as token issuer
-        console.log("Token issuer address: ", alice.keypair.publicKey)
         let tokenIssuerTx = await walletSvc.generateTransferWalletTx(admin, alice.keypair.publicKey, "TOKEN_ISSUER")
-        console.log("Received token issuer transaction:", tokenIssuerTx)
         let signedTokenIssuerTx = await admin.client.signTransaction(tokenIssuerTx.tx)
-        console.log("Signed transaction")
         let tokenIssuerTxHash = await walletSvc.broadcastTx(signedTokenIssuerTx, tokenIssuerTx.tx_id)
-        console.log("Broadcasted transaction")
         expect(tokenIssuerTxHash.tx_hash).to.not.be.undefined
         await ae.waitTxProcessed(tokenIssuerTxHash.tx_hash).catch(err => { fail(err) })
 
         // Verify Admin is now Platform Manager
         let adminResponse = await userSvc.getProfile(admin)
-        console.log("Admin response: ", adminResponse)
         if (adminResponse.role == "ADMIN") {
-            await sleep(6000)
+            await ae.sleep(6000)
             adminResponse = await userSvc.getProfile(admin)
-            console.log("Admin response: ", adminResponse)
         }
         expect(adminResponse.role).to.equal("PLATFORM_MANAGER")
 
         // Verify Alice is now Token Issuer
         let aliceResponse = await userSvc.getProfile(alice)
-        console.log("Alice response: ", aliceResponse)
         expect(aliceResponse.role).to.equal("TOKEN_ISSUER")
     })
 
@@ -320,7 +314,7 @@ describe('Complete flow test', function () {
     }
 
     after(async() => {
-        // await docker.down()
+        await docker.down()
     })
 
 })
