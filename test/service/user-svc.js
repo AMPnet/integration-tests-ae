@@ -14,5 +14,23 @@ async function getJwtToken(user) {
     })
 }
 
+async function getProfile(user) {
+    return (
+        await axios
+            .get(url.resolve(baseUrl, "me"), getBearer(user.token))
+            .catch(err => { console.log(err.response) })
+    ).data
+}
 
-module.exports = { getJwtToken }
+function getBearer(token) {
+    return {
+        headers: {
+            Authorization: `Bearer ${token}`
+        }
+    }
+}
+
+module.exports = {
+    getJwtToken,
+    getProfile
+}

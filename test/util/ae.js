@@ -1,6 +1,5 @@
 let { Universal: Ae, Crypto, MemoryAccount, Node } = require('@aeternity/aepp-sdk')
 let blockchainSvc = require('../service/blockchain-svc/blockchain-svc')
-let client
 
 function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
@@ -83,4 +82,4 @@ function waitTxProcessed(txHash) {
     })
 }
 
-module.exports = { init, waitMined, waitTxProcessed }
+module.exports = { init, waitMined, waitTxProcessed, sleep }
