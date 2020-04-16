@@ -34,6 +34,8 @@ services:
       NODE_INTERNAL_URL: http://ae-node:3113
       COMPILER_URL: http://sophia-compiler:3080
       NETWORK_ID: ae_docker
+      COOP_OWNER: ak_fUq2NesPXcYZ1CcqBcGC3StpdnQw3iVxMA3YSeCNAwfN4myQk
+      EUR_OWNER: ak_fUq2NesPXcYZ1CcqBcGC3StpdnQw3iVxMA3YSeCNAwfN4myQk
       DB_HOST: db
       DB_PORT: 5432
       DB_USER: ae_middleware_testnet
