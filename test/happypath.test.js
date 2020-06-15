@@ -8,6 +8,7 @@ let ae = require('./util/ae')
 let projectSvc = require('./service/project-svc')
 let walletSvc = require('./service/wallet-svc')
 let userSvc = require('./service/user-svc')
+let blockchainSvc = require('./service/blockchain-svc/blockchain-svc')
 
 let TestUser = require('./model/user').TestUser
 
@@ -165,6 +166,18 @@ describe('Complete flow test', function () {
         expect(projectBalance).to.equal(0)
         let investorBalance = (await walletSvc.getUserWallet(bob)).balance
         expect(investorBalance).to.equal(projectDepositAmount)
+
+        // Bob can sell shares
+        let bobPortfolio = await walletSvc.getPortfolio(bob)
+        console.log("Bob's portfolio: ", bobPortfolio)
+        expect(bobPortfolio.portfolio).to.have.length(1)
+        let projectWalletHash = (await walletSvc.getProjectWallet(projUuid)).hash
+        await sellShares(bob, projectWalletHash, 10, 10000)
+        let activeSellOffers = await walletSvc.getActiveSellOffers(bob)
+        console.log("Active sell offers: ", activeSellOffers)
+        expect(activeSellOffers.projects).to.have.length(1)
+        expect(activeSellOffers.projects[0].sell_offers).to.have.length(1)
+        // Other options for selling shares are covered in blockchain-service
     })
 
     it("Admin must be able to set new token issuer", async() => {
@@ -311,6 +324,21 @@ describe('Complete flow test', function () {
         let revenuePayoutTxHash = await walletSvc.broadcastTx(signedRevenuePayoutTx, revenuePayoutTx.tx_id)
 
         await ae.waitTxProcessed(revenuePayoutTxHash.tx_hash).catch(err => { fail(err) })
+    }
+
+    async function sellShares(user, projectTxHash, shares, price) {
+        let userWalletHash = (await walletSvc.getUserWallet(user)).hash
+        let sellTx = await blockchainSvc.createSellOffer(userWalletHash, projectTxHash, shares, price)
+        let signedSellTx = await user.client.signTransaction(sellTx)
+        let sellTxHash = await blockchainSvc.postTransaction(signedSellTx)
+
+        await ae.waitTxProcessed(sellTxHash).catch(err => { fail(err) })
+
+        let activateSellOfferTx = await blockchainSvc.activateSellOffer(userWalletHash, sellTxHash)
+        let signedSellOfferTx = await user.client.signTransaction(activateSellOfferTx)
+        let activateSellOfferTxHash = await blockchainSvc.postTransaction(signedSellOfferTx)
+
+        await ae.waitTxProcessed(activateSellOfferTxHash).catch(err => { fail(err) })
     }
 
     after(async() => {

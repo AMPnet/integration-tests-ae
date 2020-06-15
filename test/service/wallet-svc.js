@@ -204,6 +204,26 @@ async function broadcastTx(signedTx, txId) {
     ).data
 }
 
+async function getPortfolio(user) {
+    return (
+        await axios
+            .get(url.resolve(baseUrl, `portfolio`), getBearer(user.token))
+            .catch(err => {
+                console.log(err)
+            })
+    ).data
+}
+
+async function getActiveSellOffers(user) {
+    return (
+        await axios
+            .get(url.resolve(baseUrl, `sell/offer`), getBearer(user.token))
+            .catch(err => {
+                console.log(err)
+            })
+    ).data
+}
+
 function getBearer(token) {
     return {
         headers: {
@@ -230,5 +250,7 @@ module.exports = {
     generateBurnTx,
     generateRevenuePayoutTx,
     generateTransferWalletTx,
-    broadcastTx
+    broadcastTx,
+    getPortfolio,
+    getActiveSellOffers
 }
