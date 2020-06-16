@@ -1,6 +1,10 @@
 let path = require('path')
 let protoLoader = require('@grpc/proto-loader')
 let grpc = require('grpc')
+const url = require('url');
+const axios = require('axios');
+
+const baseUrl = "http://localhost:8124";
 
 module.exports = {
     init: async function() {
@@ -22,5 +26,41 @@ module.exports = {
                 }
             })
         })
+    },
+    createSellOffer: async function(fromTxHash, projectTxHash, shares, price) {
+        return (await axios.get(
+            url.resolve(baseUrl, `market/create-offer`),
+            {
+                params: {
+                    fromTxHash: fromTxHash,
+                    projectTxHash: projectTxHash,
+                    shares: shares,
+                    price: price
+                }
+            }
+        ).catch(err => {
+            console.log(err)
+        })).data.tx
+    },
+    activateSellOffer: async function(fromTxHash, sellOfferTxHash) {
+        return (await axios.get(
+            url.resolve(baseUrl, `market/activate-offer`),
+            {
+                params: {
+                    fromTxHash: fromTxHash,
+                    sellOfferTxHash: sellOfferTxHash
+                }
+            }
+        ).catch(err => {
+            console.log(err)
+        })).data.tx
+    },
+    postTransaction: async function(tx) {
+        return (await axios.post(
+            url.resolve(baseUrl, `transactions`),
+            {  data: tx }
+        ).catch(err => {
+            console.log(err)
+        })).data.tx_hash
     }
 }
