@@ -36,7 +36,7 @@ async function insertUser(user) {
     await userDb('user_info')
         .insert({
             id: id,
-            user_session_uuid: 'user_session_uuid',
+            client_session_uuid: 'client_session_uuid',
             identyum_user_uuid: 'identyum_user_uuid',
             first_name: 'First',
             last_name: 'Last',
