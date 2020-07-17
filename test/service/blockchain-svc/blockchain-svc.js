@@ -42,19 +42,6 @@ module.exports = {
             console.log(err)
         })).data.tx
     },
-    activateSellOffer: async function(fromTxHash, sellOfferTxHash) {
-        return (await axios.get(
-            url.resolve(baseUrl, `market/activate-offer`),
-            {
-                params: {
-                    fromTxHash: fromTxHash,
-                    sellOfferTxHash: sellOfferTxHash
-                }
-            }
-        ).catch(err => {
-            console.log(err)
-        })).data.tx
-    },
     postTransaction: async function(tx) {
         return (await axios.post(
             url.resolve(baseUrl, `transactions`),
