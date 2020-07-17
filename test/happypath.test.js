@@ -333,12 +333,6 @@ describe('Complete flow test', function () {
         let sellTxHash = await blockchainSvc.postTransaction(signedSellTx)
 
         await ae.waitTxProcessed(sellTxHash).catch(err => { fail(err) })
-
-        let activateSellOfferTx = await blockchainSvc.activateSellOffer(userWalletHash, sellTxHash)
-        let signedSellOfferTx = await user.client.signTransaction(activateSellOfferTx)
-        let activateSellOfferTxHash = await blockchainSvc.postTransaction(signedSellOfferTx)
-
-        await ae.waitTxProcessed(activateSellOfferTxHash).catch(err => { fail(err) })
     }
 
     after(async() => {
