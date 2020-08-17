@@ -195,7 +195,7 @@ describe('Complete flow test', function () {
         await activateWallet(alice.walletUuid, admin)
 
         // Set Alice as token issuer
-        let tokenIssuerTx = await walletSvc.generateTransferWalletTx(admin, alice.keypair.publicKey, "TOKEN_ISSUER")
+        let tokenIssuerTx = await walletSvc.generateTransferWalletTx(admin, alice.uuid, "TOKEN_ISSUER")
         let signedTokenIssuerTx = await admin.client.signTransaction(tokenIssuerTx.tx)
         let tokenIssuerTxHash = await walletSvc.broadcastTx(signedTokenIssuerTx, tokenIssuerTx.tx_id)
         expect(tokenIssuerTxHash.tx_hash).to.not.be.undefined

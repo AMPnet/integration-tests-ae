@@ -187,10 +187,10 @@ async function generateRevenuePayoutTx(admin, projectUuid, amount) {
     ).data
 }
 
-async function generateTransferWalletTx(admin, walletAddress, type) {
+async function generateTransferWalletTx(admin, userUuid, type) {
     return (await axios
         .post(url.resolve(baseUrl, `cooperative/wallet/transfer/transaction`),
-            { wallet_address: walletAddress, type: type },
+            { user_uuid: userUuid, type: type },
             getBearer(admin.token))
         .catch(err => {
             console.log(err)
