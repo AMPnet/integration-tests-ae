@@ -81,8 +81,7 @@ async function insertOrganization(name, owner) {
             created_at: new Date(),
             updated_at: null,
             approved: true,
-            approved_by_user_uuid: owner.uuid,
-            legal_info: null
+            approved_by_user_uuid: owner.uuid
         })
     return generatedUuid
 }
