@@ -110,7 +110,7 @@ async function insertProject(name, owner, orgUuid) {
             location_long: 15.98,
             roi_from: 4.44,
             roi_to: 11.22,
-            start_date: new Date(),
+            start_date: time.nowWithDaysBefore(1),
             end_date: time.nowWithDaysOffset(10),
             expected_funding: 1000000,
             currency: 'EUR',

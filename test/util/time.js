@@ -7,8 +7,14 @@ function nowWithDaysOffset(offset) {
     return (new Date()).addDays(offset)
 }
 
+function nowWithDaysBefore(before) {
+    var date = new Date();
+    date.setDate(date.getDate() - before);
+    return date;
+}
+
 function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-module.exports = { nowWithDaysOffset, sleep }
+module.exports = { nowWithDaysOffset, nowWithDaysBefore, sleep }

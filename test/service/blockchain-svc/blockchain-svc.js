@@ -49,5 +49,12 @@ module.exports = {
         ).catch(err => {
             console.log(err)
         })).data.tx_hash
+    },
+    getProjectInfo: async function(projectHash) {
+        return (await axios.get(
+            url.resolve(baseUrl, `projects/${projectHash}`)
+        ).catch(err => {
+            console.log(err)
+        })).data
     }
 }

@@ -82,6 +82,29 @@ describe('Complete flow test', function () {
         expect(user.uuid).to.equal(alice.uuid)
     })
 
+    it('Validate Project service connection to Wallet service', async () => {
+        // Create Admin
+        let admin = await TestUser.createAdmin('admin@email.com')
+        await db.insertUser(admin)
+        await admin.getJwtToken()
+
+        // Create user Alice with wallet
+        let alice = await TestUser.createRegular('alice@email.com', keyPairs.alice)
+        await createUserWithWallet(alice)
+        await activateWallet(alice.walletUuid, admin)
+
+        // Alice creates Organization with wallet
+        let orgUuid = await createOrganizationWithWallet('Org', alice, admin)
+
+        // Alice Project with wallet
+        let projUuid = await createProjectWithWallet('Active Project', alice, orgUuid, admin)
+        let activeProjects = await projectSvc.getActiveProjects().projects_with_wallet
+        expect(activeProjects).to.have.length(1)
+        expect(activeProjects[0].project.uuid).to.be.equal(projUuid)
+        let projectInfo = await blockchainSvc.getProjectInfo(activeProjects[0].wallet.hash)
+        expect(projectInfo.totalFundsRaised).to.be.equal(0)
+    })
+
     it('Must be able to execute complete flow', async () => {
         // Create Admin
         let admin = await TestUser.createAdmin('admin@email.com')
