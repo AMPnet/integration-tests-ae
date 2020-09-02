@@ -192,12 +192,10 @@ describe('Complete flow test', function () {
 
         // Bob can sell shares
         let bobPortfolio = await walletSvc.getPortfolio(bob)
-        console.log("Bob's portfolio: ", bobPortfolio)
         expect(bobPortfolio.portfolio).to.have.length(1)
         let projectWalletHash = (await walletSvc.getProjectWallet(projUuid)).hash
         await sellShares(bob, projectWalletHash, 10, 10000)
         let activeSellOffers = await walletSvc.getActiveSellOffers(bob)
-        console.log("Active sell offers: ", activeSellOffers)
         expect(activeSellOffers.projects).to.have.length(1)
         expect(activeSellOffers.projects[0].sell_offers).to.have.length(1)
         // Other options for selling shares are covered in blockchain-service
