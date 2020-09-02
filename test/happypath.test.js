@@ -82,6 +82,29 @@ describe('Complete flow test', function () {
         expect(user.uuid).to.equal(alice.uuid)
     })
 
+    it('Validate Project service connection to Wallet service', async () => {
+        // Create Admin
+        let admin = await TestUser.createAdmin('admin@email.com')
+        await db.insertUser(admin)
+        await admin.getJwtToken()
+
+        // Create user Alice with wallet
+        let alice = await TestUser.createRegular('alice@email.com', keyPairs.alice)
+        await createUserWithWallet(alice)
+        await activateWallet(alice.walletUuid, admin)
+
+        // Alice creates Organization with wallet
+        let orgUuid = await createOrganizationWithWallet('Org', alice, admin)
+
+        // Alice Project with wallet
+        let projUuid = await createProjectWithWallet('Active Project', alice, orgUuid, admin)
+        let activeProjects = (await projectSvc.getActiveProjects()).projects_with_wallet
+        expect(activeProjects).to.have.length(1)
+        expect(activeProjects[0].project.uuid).to.be.equal(projUuid)
+        let projectInfo = await blockchainSvc.getProjectInfo(activeProjects[0].wallet.hash)
+        expect(projectInfo.totalFundsRaised).to.be.equal(0)
+    })
+
     it('Must be able to execute complete flow', async () => {
         // Create Admin
         let admin = await TestUser.createAdmin('admin@email.com')
@@ -169,12 +192,10 @@ describe('Complete flow test', function () {
 
         // Bob can sell shares
         let bobPortfolio = await walletSvc.getPortfolio(bob)
-        console.log("Bob's portfolio: ", bobPortfolio)
         expect(bobPortfolio.portfolio).to.have.length(1)
         let projectWalletHash = (await walletSvc.getProjectWallet(projUuid)).hash
         await sellShares(bob, projectWalletHash, 10, 10000)
         let activeSellOffers = await walletSvc.getActiveSellOffers(bob)
-        console.log("Active sell offers: ", activeSellOffers)
         expect(activeSellOffers.projects).to.have.length(1)
         expect(activeSellOffers.projects[0].sell_offers).to.have.length(1)
         // Other options for selling shares are covered in blockchain-service
