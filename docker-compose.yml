@@ -64,6 +64,13 @@ services:
     ports:
       - 8125:8125
 
+  report-service:
+    image: ampnet/report-service:latest
+    environment:
+      - "spring.profiles.active=dev"
+    ports:
+      - 8129:8129
+
   ae-node:
     image: aeternity/aeternity:v5.0.0-rc.4
     environment:
