@@ -8,6 +8,7 @@ let ae = require('./util/ae')
 let projectSvc = require('./service/project-svc')
 let walletSvc = require('./service/wallet-svc')
 let userSvc = require('./service/user-svc')
+let reportSvc = require('./service/report-svc')
 let blockchainSvc = require('./service/blockchain-svc/blockchain-svc')
 
 let TestUser = require('./model/user').TestUser
@@ -199,6 +200,10 @@ describe('Complete flow test', function () {
         expect(activeSellOffers.projects).to.have.length(1)
         expect(activeSellOffers.projects[0].sell_offers).to.have.length(1)
         // Other options for selling shares are covered in blockchain-service
+
+        // Generate PDF report for Bob
+        let reportResponse = await reportSvc.getTransactionsReport(bob)
+        expect(reportResponse.status).to.equal(200)
     })
 
     it("Admin must be able to set new token issuer", async() => {
