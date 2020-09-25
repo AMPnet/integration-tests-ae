@@ -8,6 +8,8 @@ let ae = require('./util/ae')
 let projectSvc = require('./service/project-svc')
 let walletSvc = require('./service/wallet-svc')
 let userSvc = require('./service/user-svc')
+let reportSvc = require('./service/report-svc')
+let blockchainSvc = require('./service/blockchain-svc/blockchain-svc')
 
 let TestUser = require('./model/user').TestUser
 
@@ -79,6 +81,29 @@ describe('Complete flow test', function () {
         expect(unactivatedUserWallets.users).to.have.lengthOf(1)
         let user = unactivatedUserWallets.users[0].user
         expect(user.uuid).to.equal(alice.uuid)
+    })
+
+    it('Validate Project service connection to Wallet service', async () => {
+        // Create Admin
+        let admin = await TestUser.createAdmin('admin@email.com')
+        await db.insertUser(admin)
+        await admin.getJwtToken()
+
+        // Create user Alice with wallet
+        let alice = await TestUser.createRegular('alice@email.com', keyPairs.alice)
+        await createUserWithWallet(alice)
+        await activateWallet(alice.walletUuid, admin)
+
+        // Alice creates Organization with wallet
+        let orgUuid = await createOrganizationWithWallet('Org', alice, admin)
+
+        // Alice Project with wallet
+        let projUuid = await createProjectWithWallet('Active Project', alice, orgUuid, admin)
+        let activeProjects = (await projectSvc.getActiveProjects()).projects_with_wallet
+        expect(activeProjects).to.have.length(1)
+        expect(activeProjects[0].project.uuid).to.be.equal(projUuid)
+        let projectInfo = await blockchainSvc.getProjectInfo(activeProjects[0].wallet.hash)
+        expect(projectInfo.totalFundsRaised).to.be.equal(0)
     })
 
     it('Must be able to execute complete flow', async () => {
@@ -165,6 +190,20 @@ describe('Complete flow test', function () {
         expect(projectBalance).to.equal(0)
         let investorBalance = (await walletSvc.getUserWallet(bob)).balance
         expect(investorBalance).to.equal(projectDepositAmount)
+
+        // Bob can sell shares
+        let bobPortfolio = await walletSvc.getPortfolio(bob)
+        expect(bobPortfolio.portfolio).to.have.length(1)
+        let projectWalletHash = (await walletSvc.getProjectWallet(projUuid)).hash
+        await sellShares(bob, projectWalletHash, 10, 10000)
+        let activeSellOffers = await walletSvc.getActiveSellOffers(bob)
+        expect(activeSellOffers.projects).to.have.length(1)
+        expect(activeSellOffers.projects[0].sell_offers).to.have.length(1)
+        // Other options for selling shares are covered in blockchain-service
+
+        // Generate PDF report for Bob
+        let reportResponse = await reportSvc.getTransactionsReport(bob)
+        expect(reportResponse.status).to.equal(200)
     })
 
     it("Admin must be able to set new token issuer", async() => {
@@ -182,7 +221,7 @@ describe('Complete flow test', function () {
         await activateWallet(alice.walletUuid, admin)
 
         // Set Alice as token issuer
-        let tokenIssuerTx = await walletSvc.generateTransferWalletTx(admin, alice.keypair.publicKey, "TOKEN_ISSUER")
+        let tokenIssuerTx = await walletSvc.generateTransferWalletTx(admin, alice.uuid, "TOKEN_ISSUER")
         let signedTokenIssuerTx = await admin.client.signTransaction(tokenIssuerTx.tx)
         let tokenIssuerTxHash = await walletSvc.broadcastTx(signedTokenIssuerTx, tokenIssuerTx.tx_id)
         expect(tokenIssuerTxHash.tx_hash).to.not.be.undefined
@@ -311,6 +350,15 @@ describe('Complete flow test', function () {
         let revenuePayoutTxHash = await walletSvc.broadcastTx(signedRevenuePayoutTx, revenuePayoutTx.tx_id)
 
         await ae.waitTxProcessed(revenuePayoutTxHash.tx_hash).catch(err => { fail(err) })
+    }
+
+    async function sellShares(user, projectTxHash, shares, price) {
+        let userWalletHash = (await walletSvc.getUserWallet(user)).hash
+        let sellTx = await blockchainSvc.createSellOffer(userWalletHash, projectTxHash, shares, price)
+        let signedSellTx = await user.client.signTransaction(sellTx)
+        let sellTxHash = await blockchainSvc.postTransaction(signedSellTx)
+
+        await ae.waitTxProcessed(sellTxHash).catch(err => { fail(err) })
     }
 
     after(async() => {

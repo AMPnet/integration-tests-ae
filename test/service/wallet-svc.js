@@ -1,7 +1,38 @@
-let axios = require('axios')
-let url = require('url')
+const url = require('url');
+const axios = require('axios');
 
-let baseUrl = "http://localhost:8128"
+const baseUrl = "http://localhost:8128";
+
+axios.interceptors.response.use(undefined, function axiosRetryInterceptor(err) {
+    var config = err.config;
+    config.retry = 3;
+    config.retryDelay = 2000;
+
+    // Retry only middleware
+    if(err.response.status != 502) return Promise.reject(err);
+
+    // Set the variable for keeping track of the retry count
+    config.__retryCount = config.__retryCount || 0;
+
+    // Check if we've maxed out the total number of retries
+    if(config.__retryCount >= config.retry) {
+        return Promise.reject(err);
+    }
+    config.__retryCount += 1;
+    console.log(`--- Retry request #${config.__retryCount} ---`);
+
+    // Create new promise to handle exponential backoff
+    var backoff = new Promise(function(resolve) {
+        setTimeout(function() {
+            resolve();
+        }, config.retryDelay || 1);
+    });
+
+    // Return the promise in which recalls axios to retry the request
+    return backoff.then(function() {
+        return axios(config);
+    });
+});
 
 async function createUserWallet(user) {
     return (
@@ -108,13 +139,15 @@ async function generateMintTx(admin, depositId) {
 }
 
 async function generateInvestTx(investor, projUuid, amount) {
-    return (await axios.post(
-        url.resolve(baseUrl, `invest/project/${projUuid}`),
-        { amount: amount },
-        getBearer(investor.token)
-    ).catch(err => {
-        console.log(err)
-    })).data
+    return (
+        await axios
+            .post(url.resolve(baseUrl, `invest/project/${projUuid}`),
+                { amount: amount },
+                getBearer(investor.token))
+            .catch(err => {
+                console.log(err)
+            })
+    ).data
 }
 
 async function generateCancelInvestmentsTx(investor, projectUuid) {
@@ -128,48 +161,66 @@ async function generateCancelInvestmentsTx(investor, projectUuid) {
 }
 
 async function generateWithdrawTx(user, withdrawId) {
-    return (await axios.post(
-        url.resolve(baseUrl, `withdraw/${withdrawId}/transaction/approve`),
-        {},
-        getBearer(user.token)
-    ).catch(err => {
-        console.log(err)
-    })).data
+    return (await axios
+        .post(url.resolve(baseUrl, `withdraw/${withdrawId}/transaction/approve`), {}, getBearer(user.token))
+        .catch(err => {
+            console.log(err)
+        })
+    ).data
 }
 
 async function generateBurnTx(admin, withdrawId) {
-    return (await axios.post(
-        url.resolve(baseUrl, `cooperative/withdraw/${withdrawId}/transaction/burn`),
-        {},
-        getBearer(admin.token)
-    ).catch(err => {
-        console.log(err)
-    })).data
+    return (await axios
+        .post(url.resolve(baseUrl, `cooperative/withdraw/${withdrawId}/transaction/burn`), {}, getBearer(admin.token))
+        .catch(err => {
+            console.log(err)
+        })
+    ).data
 }
 
 async function generateRevenuePayoutTx(admin, projectUuid, amount) {
-    return (await axios.post(
-        url.resolve(baseUrl, `revenue/payout/project/${projectUuid}`),
-        { amount: amount },
-        getBearer(admin.token)
-    ).catch(err => {
-        console.log(err)
-    })).data
+    return (await axios
+        .post(url.resolve(baseUrl, `revenue/payout/project/${projectUuid}`), { amount: amount }, getBearer(admin.token))
+        .catch(err => {
+            console.log(err)
+        })
+    ).data
 }
 
-async function generateTransferWalletTx(admin, walletAddress, type) {
-    return (await axios.post(
-        url.resolve(baseUrl, `cooperative/wallet/transfer/transaction`),
-        { wallet_address: walletAddress, type: type },
-        getBearer(admin.token)
-    ).catch(err => {
-        console.log(err)
-    })).data
+async function generateTransferWalletTx(admin, userUuid, type) {
+    return (await axios
+        .post(url.resolve(baseUrl, `cooperative/wallet/transfer/transaction`),
+            { user_uuid: userUuid, type: type },
+            getBearer(admin.token))
+        .catch(err => {
+            console.log(err)
+        })
+    ).data
 }
 
 async function broadcastTx(signedTx, txId) {
-    return (await axios.post(
-        url.resolve(baseUrl, 'tx_broadcast'), { tx_sig: signedTx, tx_id: txId })
+    return (await axios
+        .post(url.resolve(baseUrl, 'tx_broadcast'), { tx_sig: signedTx, tx_id: txId })
+    ).data
+}
+
+async function getPortfolio(user) {
+    return (
+        await axios
+            .get(url.resolve(baseUrl, `portfolio`), getBearer(user.token))
+            .catch(err => {
+                console.log(err)
+            })
+    ).data
+}
+
+async function getActiveSellOffers(user) {
+    return (
+        await axios
+            .get(url.resolve(baseUrl, `sell/offer`), getBearer(user.token))
+            .catch(err => {
+                console.log(err)
+            })
     ).data
 }
 
@@ -199,5 +250,7 @@ module.exports = {
     generateBurnTx,
     generateRevenuePayoutTx,
     generateTransferWalletTx,
-    broadcastTx
+    broadcastTx,
+    getPortfolio,
+    getActiveSellOffers
 }

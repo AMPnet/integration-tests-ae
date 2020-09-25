@@ -36,21 +36,21 @@ async function insertUser(user) {
     await userDb('user_info')
         .insert({
             id: id,
-            web_session_uuid: 'web_session_uuid',
-            verified_email: 'verified_email@mail.com',
-            phone_number: '+385',
-            country: 'HRV',
-            date_of_birth: '1978-03-02',
-            identyum_number: 'ae1ee02d-8a2d-4c50-a6ca-8f0454e19f6d',
-            document_type: 'PERSONAL_ID_CARD',
-            document_number: '48077962579',
+            client_session_uuid: 'client_session_uuid',
+            identyum_user_uuid: 'identyum_user_uuid',
             first_name: 'First',
             last_name: 'Last',
-            citizenship: 'HRV',
-            resident: true,
-            address_city: 'city',
-            address_county: 'county',
-            address_street: 'street',
+            verified_email: 'verified_email@mail.com',
+            phone_number: '+385',
+            date_of_birth: '1978-03-02',
+            personal_number: 'personal_num',
+            document_type: 'ID_CARD',
+            document_number: '48077962579',
+            document_date_of_expiry: '2022-02-02',
+            document_issuing_country: 'HRV',
+            document_issued_by: 'document_issued_by',
+            nationality: 'HRV',
+            address: 'address',
             created_at: new Date(),
             connected: true,
             deactivated: false
@@ -81,8 +81,7 @@ async function insertOrganization(name, owner) {
             created_at: new Date(),
             updated_at: null,
             approved: true,
-            approved_by_user_uuid: owner.uuid,
-            legal_info: null
+            approved_by_user_uuid: owner.uuid
         })
     return generatedUuid
 }
@@ -111,7 +110,7 @@ async function insertProject(name, owner, orgUuid) {
             location_long: 15.98,
             roi_from: 4.44,
             roi_to: 11.22,
-            start_date: new Date(),
+            start_date: time.nowWithDaysBefore(1),
             end_date: time.nowWithDaysOffset(10),
             expected_funding: 1000000,
             currency: 'EUR',

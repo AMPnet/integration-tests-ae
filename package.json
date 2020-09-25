@@ -9,18 +9,18 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@aeternity/aepp-sdk": "^7.1.1",
+    "@aeternity/aepp-sdk": "^7.4.2",
     "@danielwpz/health-check": "0.0.1",
-    "@grpc/proto-loader": "^0.5.3",
+    "@grpc/proto-loader": "^0.5.5",
     "chai": "^4.2.0",
     "deepmerge": "^4.2.2",
-    "docker-compose": "^0.23.3",
-    "grpc": "^1.24.2",
-    "knex": "^0.20.15",
-    "mocha": "^7.1.1",
-    "pg": "^8.0.2",
+    "docker-compose": "^0.23.5",
+    "grpc": "^1.24.3",
+    "knex": "^0.21.5",
+    "mocha": "^8.1.1",
+    "pg": "^8.3.2",
     "querystring": "^0.2.0",
-    "uuid": "^7.0.2"
+    "uuid": "^8.3.0"
   },
   "devDependencies": {}
 }
