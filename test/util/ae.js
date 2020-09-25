@@ -57,23 +57,23 @@ function waitTxProcessed(txHash) {
         let interval = 3000 //ms
         let maxChecks = 50
         var attempts = 0
-        let pendingState = "PENDING"
+        let pendingState = 1
         let requiredState = "REQUIRED"
         var txState = pendingState
         var supervisorState = requiredState
         while(attempts < maxChecks) {
             await sleep(interval)
-            info = await blockchainSvc.getTxInfo(txHash)
-            if (info.state != pendingState && info.supervisorStatus != requiredState) { 
+            info = await grpc.getTransactionInfo(txHash)
+            if (info.state !== pendingState && info.supervisorStatus !== requiredState) { 
                 txState = info.state
                 supervisorState = info.supervisorStatus
                 break
             }
             attempts++
         }
-        if (txState == pendingState) {
+        if (txState === pendingState) {
             throw new Error(`Waiting for transaction ${txHash} to be mined timed out.`)
-        } else if (supervisorState == requiredState) {
+        } else if (supervisorState === requiredState) {
             throw new Error(`Waiting for supervisor to process transaction ${txHash} timed out.`)
         } else {
             console.log(`Transaction ${txHash} processed. \n\tTx status: ${txState}\n\tSupervisor status: ${supervisorState}`)

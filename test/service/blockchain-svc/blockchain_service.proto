@@ -21,6 +21,14 @@ message WalletActiveResponse {
     bool active = 1;
 }
 
+message PlatformManagerResponse {
+    string wallet = 1;
+}
+
+message GenerateTransferPlatformManagerOwnershipTxRequest {
+    string new_owner_wallet = 1;
+}
+
 
 ///////// EUR contract messages //////////
 
@@ -52,6 +60,14 @@ message GenerateInvestTxRequest {
     string amount = 3;
 }
 
+message TokenIssuerResponse {
+    string wallet = 1;
+}
+
+message GenerateTransferTokenIssuerOwnershipTxRequest {
+    string new_owner_wallet = 1;
+}
+
 ///////// Organization contract //////////
 
 
@@ -62,6 +78,17 @@ message GenerateStartRevenueSharesPayoutTxRequest {
     string from_tx_hash = 1;
     string project_tx_hash = 2;
     string revenue = 3;
+}
+
+message GenerateApproveProjectWithdrawTxRequest {
+    string from_tx_hash = 1;
+    string project_tx_hash = 2;
+    string amount = 3;
+}
+
+message GenerateCancelInvestmentTxRequest {
+    string from_tx_hash = 1;
+    string project_tx_hash = 2;
 }
 
 message GetProjectsInfoRequest {
@@ -76,8 +103,19 @@ message GetProjectsInfoResponse {
         string min_per_user_investment = 4;
         string max_per_user_investment = 5;
         string ends_at = 6;
+        bool payout_in_process = 7;
+        string balance = 8;
     }
     repeated ProjectInfo projects = 1;
+}
+
+message IsInvestmentCancelableRequest {
+    string investor_tx_hash = 1;
+    string project_tx_hash = 2;
+}
+
+message IsInvestmentCancelableResponse {
+    bool can_cancel = 1;
 }
 
 
@@ -114,31 +152,43 @@ message InvestmentsInProjectRequest {
 
 message TransactionsResponse {
     message Transaction {
-        enum Type {
-            DEPOSIT = 0;
-            WITHDRAW = 1;
-            INVEST = 2;
-            SHARE_PAYOUT = 3;
-        }
         string from_tx_hash = 1;
         string to_tx_hash = 2;
         string amount = 3;
         string date = 4;
-        Type type = 5;
+        TransactionType type = 5;
+        TransactionState state = 6;
     }
     repeated Transaction transactions = 1;
 }
 
+message ActiveSellOffersResponse {
+    message CounterOffer {
+        string buyer_tx_hash = 1;
+        string price = 2;
+    }
+    message SellOffer {
+        string seller_tx_hash = 1;
+        string project_tx_hash = 2;
+        string shares = 3;
+        string price = 4;
+        repeated CounterOffer counter_offers = 5;
+    }
+    repeated SellOffer offers = 1;
+}
+
 message TransactionInfoRequest {
     string tx_hash = 1;
+    string from = 2;
+    string to = 3;
 }
 
 message TransactionInfoResponse {
     string hash = 1;
     string from_wallet = 2;
     string to_wallet = 3;
-    string state = 4;
-    string type = 5;
+    TransactionState state = 4;
+    TransactionType type = 5;
     string amount = 6;
     string supervisor_status = 7;
 }
@@ -168,6 +218,35 @@ message Empty {
 
 }
 
+////////// Types ///////////////////////////
+
+enum TransactionState {
+    MINED = 0;
+    PENDING = 1;
+    FAILED = 2;
+}
+
+enum TransactionType {
+    DEPOSIT = 0;
+    WITHDRAW = 1;
+    INVEST = 2;
+    SHARE_PAYOUT = 3;
+    CANCEL_INVESTMENT = 4;
+    APPROVE_INVESTMENT = 5;
+    WALLET_CREATE = 6;
+    ORG_CREATE = 7;
+    PROJ_CREATE = 8;
+    SELL_OFFER_CREATE = 9;
+    APPROVE_USER_WITHDRAW = 10;
+    PENDING_PROJ_WITHDRAW = 11;
+    APPROVE_COUNTER_OFFER = 12;
+    START_REVENUE_PAYOUT = 13;
+    COOP_OWNERSHIP_TRANSFER = 14;
+    EUR_OWNERSHIP_TRANSFER = 15;
+    COUNTER_OFFER_PLACED = 16;
+    COUNTER_OFFER_REMOVED = 17;
+    SHARES_SOLD = 18;
+}
 
 ///////// Service definition ////////////////
 
@@ -177,7 +256,8 @@ service BlockchainService {
 
     rpc GenerateAddWalletTx(GenerateAddWalletTxRequest) returns (RawTxResponse);
     rpc IsWalletActive(WalletActiveRequest) returns (WalletActiveResponse);
-
+    rpc GetPlatformManager(Empty) returns (PlatformManagerResponse);
+    rpc GenerateTransferPlatformManagerOwnershipTx(GenerateTransferPlatformManagerOwnershipTxRequest) returns (RawTxResponse);
 
     // EUR
 
@@ -186,13 +266,17 @@ service BlockchainService {
     rpc GenerateApproveWithdrawTx(GenerateApproveWithdrawTxRequest) returns (RawTxResponse);
     rpc GenerateInvestTx(GenerateInvestTxRequest) returns (RawTxResponse);
     rpc GetBalance(BalanceRequest) returns (BalanceResponse);
-
-
+    rpc GetTokenIssuer(Empty) returns (TokenIssuerResponse);
+    rpc GenerateTransferTokenIssuerOwnershipTx(GenerateTransferTokenIssuerOwnershipTxRequest) returns (RawTxResponse);
+    
     // Organization
 
 
     // Project
 
+    rpc GenerateApproveProjectWithdrawTx(GenerateApproveProjectWithdrawTxRequest) returns (RawTxResponse);
+    rpc GenerateCancelInvestmentTx(GenerateCancelInvestmentTxRequest) returns (RawTxResponse);
+    rpc IsInvestmentCancelable(IsInvestmentCancelableRequest) returns (IsInvestmentCancelableResponse);
     rpc GenerateStartRevenueSharesPayoutTx(GenerateStartRevenueSharesPayoutTxRequest) returns (RawTxResponse);
     rpc GetProjectsInfo(GetProjectsInfoRequest) returns (GetProjectsInfoResponse);
     
@@ -201,7 +285,6 @@ service BlockchainService {
     rpc GenerateCreateOrganizationTx(GenerateCreateOrganizationTxRequest) returns (RawTxResponse);
     rpc GenerateCreateProjectTx(GenerateCreateProjectTxRequest) returns (RawTxResponse);
 
-    
     // Transactions
 
     rpc PostTransaction(PostTxRequest) returns (PostTxResponse);
@@ -209,4 +292,5 @@ service BlockchainService {
     rpc GetTransactions(TransactionsRequest) returns (TransactionsResponse);
     rpc GetInvestmentsInProject(InvestmentsInProjectRequest) returns (TransactionsResponse);
     rpc GetTransactionInfo(TransactionInfoRequest) returns (TransactionInfoResponse);
+    rpc GetActiveSellOffers(Empty) returns (ActiveSellOffersResponse);
 }
