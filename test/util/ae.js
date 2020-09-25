@@ -63,7 +63,7 @@ function waitTxProcessed(txHash) {
         var supervisorState = requiredState
         while(attempts < maxChecks) {
             await sleep(interval)
-            info = await grpc.getTransactionInfo(txHash)
+            info = await blockchainSvc.getTxInfo(txHash)
             if (info.state !== pendingState && info.supervisorStatus !== requiredState) { 
                 txState = info.state
                 supervisorState = info.supervisorStatus

@@ -362,7 +362,7 @@ describe('Complete flow test', function () {
     }
 
     after(async() => {
-        await docker.down()
+        // await docker.down()
     })
 
 })
