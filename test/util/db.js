@@ -131,7 +131,6 @@ async function insertDeposit(ownerUuid, userUuid, amount, type) {
             owner_uuid: ownerUuid,
             reference: 'reference',
             amount: amount,
-            approved: true,
             approved_by_user_uuid: userUuid,
             approved_at: new Date(),
             created_at: new Date(),
