@@ -44,7 +44,7 @@ jobs:
           command: ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -t root@167.99.142.146 "docker-compose -f /home/eugen/ampnet-docker-compose/docker-compose.yml pull --ignore-pull-failures"
       - run:
           name: Run docker-compose
-          command: ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -t root@167.99.142.146 "docker-compose -f /home/eugen/ampnet-docker-compose/docker-compose.yml up -d"
+          command: ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -t root@167.99.142.146 "docker-compose -f /home/eugen/ampnet-docker-compose/docker-compose.yml -f /home/eugen/ampnet-docker-compose/docker-compose.override.yml up -d"
 
 workflows:
   version: 2
