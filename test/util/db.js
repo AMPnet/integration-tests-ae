@@ -135,7 +135,8 @@ async function insertDeposit(ownerUuid, userUuid, amount, type) {
             approved_at: new Date(),
             created_at: new Date(),
             created_by: userUuid,
-            type: type
+            type: type,
+            coop: 'ampnet'
         })
     return id
 }
@@ -150,7 +151,8 @@ async function insertWithdraw(ownerUuid, user, amount, type) {
             created_at: new Date(),
             created_by: user.uuid,
             bank_account: 'HR1210010051863000160',
-            type: type
+            type: type,
+            coop: 'coop'
         })
     return id
 }
