@@ -8,6 +8,7 @@ let projectDb       = knex(getConfig("project_service"))
 let walletDb       = knex(getConfig("wallet_service"))
 
 const ORG_ADMIN_ROLE = 1
+const COOP = 'ampnet'
 
 async function cleanProject() {
     await projectDb.raw('TRUNCATE TABLE organization CASCADE')
@@ -67,7 +68,8 @@ async function insertUser(user) {
             created_at: new Date(),
             auth_method: 'EMAIL',
             enabled: true,
-            user_info_id: id
+            user_info_id: id,
+            coop: COOP
         })
 }
 
@@ -81,7 +83,8 @@ async function insertOrganization(name, owner) {
             created_at: new Date(),
             updated_at: null,
             approved: true,
-            approved_by_user_uuid: owner.uuid
+            approved_by_user_uuid: owner.uuid,
+            coop: COOP
         })
     return generatedUuid
 }
@@ -118,7 +121,8 @@ async function insertProject(name, owner, orgUuid) {
             max_per_user: 1000000,
             created_by_user_uuid: owner.uuid,
             created_at: new Date(),
-            active: true
+            active: true,
+            coop: COOP
         })
     return generatedUuid
 }
@@ -135,7 +139,8 @@ async function insertDeposit(ownerUuid, userUuid, amount, type) {
             approved_at: new Date(),
             created_at: new Date(),
             created_by: userUuid,
-            type: type
+            type: type,
+            coop: COOP
         })
     return id
 }
@@ -150,7 +155,8 @@ async function insertWithdraw(ownerUuid, user, amount, type) {
             created_at: new Date(),
             created_by: user.uuid,
             bank_account: 'HR1210010051863000160',
-            type: type
+            type: type,
+            coop: COOP
         })
     return id
 }
