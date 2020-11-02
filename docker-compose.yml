@@ -5,6 +5,8 @@ services:
     build:
       context: ./db
     image: integration-db
+    environment:
+      - POSTGRES_PASSWORD=postgres
     ports:
       - 5432:5432
 
