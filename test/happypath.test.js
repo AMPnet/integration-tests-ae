@@ -99,7 +99,7 @@ describe('Complete flow test', function () {
 
         // Alice Project with wallet
         let projUuid = await createProjectWithWallet('Active Project', alice, orgUuid, admin)
-        let activeProjects = (await projectSvc.getActiveProjects()).projects_with_wallet
+        let activeProjects = (await projectSvc.getActiveProjects()).projects_wallets
         expect(activeProjects).to.have.length(1)
         expect(activeProjects[0].project.uuid).to.be.equal(projUuid)
         let projectInfo = await blockchainSvc.getProjectInfo(activeProjects[0].wallet.hash)
