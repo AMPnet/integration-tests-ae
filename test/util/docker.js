@@ -36,12 +36,14 @@ async function healthcheck() {
     let walletServiceChecker = new HTTPChecker('Wallet Service checker', 'http://localhost:8128/actuator/health')
     let userServiceChecker = new HTTPChecker('User Service checker', 'http://localhost:8125/actuator/health')
     let reportServiceChecker = new HTTPChecker('Report Service checker', 'http://localhost:8129/actuator/health')
+    let autoFunderServiceChecker = new HTTPChecker('AutoFunder Service checker', 'http://localhost:8130/metrics')
 let healthcheck = new Healthcheck([
     blockchainServiceChecker,
     projectServiceChecker,
     walletServiceChecker,
     userServiceChecker,
-    reportServiceChecker
+    reportServiceChecker,
+    autoFunderServiceChecker
 ])
     var numberOfChecks = 0
     do {
