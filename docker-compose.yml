@@ -38,21 +38,18 @@ services:
       NETWORK_ID: ae_docker
       COOP_OWNER: ak_fUq2NesPXcYZ1CcqBcGC3StpdnQw3iVxMA3YSeCNAwfN4myQk
       EUR_OWNER: ak_fUq2NesPXcYZ1CcqBcGC3StpdnQw3iVxMA3YSeCNAwfN4myQk
+      REDIS_HOST: redis
       DB_HOST: db
       DB_PORT: 5432
       DB_USER: ae_middleware_testnet
       DB_PASSWORD: password
       DB_NAME: ae_middleware_testnet
-      QUEUE_DB_HOST: db
-      QUEUE_DB_PORT: 5432
-      QUEUE_DB_USER: ae_middleware_testnet_queue
-      QUEUE_DB_PASSWORD: password
-      QUEUE_DB_NAME: ae_middleware_testnet_queue
     restart: always
     depends_on:
       - db
       - ae-node
       - sophia-compiler
+      - redis
     ports:
       - 8124:8124
       - 8224:8224
@@ -94,19 +91,21 @@ services:
   auto-funder:
     image: ampnet/auto-funder:latest
     environment:
-      QUEUE_DB_HOST: db
-      QUEUE_DB_PORT: 5432
-      QUEUE_DB_USER: ae_middleware_testnet_queue
-      QUEUE_DB_PASSWORD: password
-      QUEUE_DB_NAME: ae_middleware_testnet_queue
       NODE_URL: http://ae-node:3013
       NODE_INTERNAL_URL: http://ae-node:3113
       COMPILER_URL: http://sophia-compiler:3080
       FUNDERS: 7c6e602a94f30e4ea7edabe4376314f69ba7eaa2f355ecedb339df847b6f0d80575f81ffb0a297b7725dc671da0b1769b1fc5cbe45385c7b5ad1fc2eaf1d609d
+      REDIS_HOST: redis
     restart: always
     depends_on:
       - ae-node
       - sophia-compiler
       - db
+      - redis
     ports:
       - "8130:8130"
+
+  redis:
+    image: redis:latest
+    ports:
+      - 6379:6379

@@ -58,7 +58,7 @@ function waitTxProcessed(txHash) {
         let maxChecks = 50
         var attempts = 0
         let pendingState = 1
-        let requiredState = "REQUIRED"
+        let requiredState = 1
         var txState = pendingState
         var supervisorState = requiredState
         while(attempts < maxChecks) {
