@@ -344,7 +344,7 @@ describe('Complete flow test', function () {
     function waitForWalletActivation(user) {
         return new Promise(async (resolve, reject) => {
             let interval = 3000 //ms
-            let maxChecks = 20
+            let maxChecks = 50
             var attempts = 0
 
             while(attempts < maxChecks) {
