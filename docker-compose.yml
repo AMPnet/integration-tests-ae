@@ -20,7 +20,7 @@ services:
        - 8123:8123
 
   wallet-service:
-    image: ampnet/wallet-service:latest
+    image: ampnet/wallet-service:duimane
     environment:
       - "spring.profiles.active=integration-test"
     depends_on:
@@ -29,21 +29,20 @@ services:
        - 8128:8128
 
   blockchain-service:
-    image: ampnet/crowdfunding-ae-middleware:latest
+    image: ampnet/crowdfunding-ae-middleware:0.0.49-coop
     environment:
       NODE_ENV: local
       NODE_URL: http://ae-node:3013
       NODE_INTERNAL_URL: http://ae-node:3113
       COMPILER_URL: http://sophia-compiler:3080
       NETWORK_ID: ae_docker
-      COOP_OWNER: ak_fUq2NesPXcYZ1CcqBcGC3StpdnQw3iVxMA3YSeCNAwfN4myQk
-      EUR_OWNER: ak_fUq2NesPXcYZ1CcqBcGC3StpdnQw3iVxMA3YSeCNAwfN4myQk
       REDIS_HOST: redis
       DB_HOST: db
       DB_PORT: 5432
       DB_USER: ae_middleware_testnet
       DB_PASSWORD: password
       DB_NAME: ae_middleware_testnet
+      WALLET_SERVICE_GRPC_URL: wallet-service:8228
     restart: always
     depends_on:
       - db
@@ -64,7 +63,7 @@ services:
       - 8125:8125
 
   report-service:
-    image: ampnet/report-service:latest
+    image: ampnet/report-service:duimane
     environment:
       - "spring.profiles.active=dev"
     ports:

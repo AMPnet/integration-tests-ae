@@ -4,6 +4,7 @@ let expect = chai.expect
 let docker = require('./util/docker')
 let db = require('./util/db')
 let ae = require('./util/ae')
+let timeUtil = require('./util/time')
 
 let projectSvc = require('./service/project-svc')
 let walletSvc = require('./service/wallet-svc')
@@ -102,6 +103,8 @@ describe('Complete flow test', function () {
         let admin = await TestUser.createAdmin('admin@email.com')
         await db.insertUser(admin)
         await admin.getJwtToken()
+        await walletSvc.createUserWallet(admin)
+        await waitForWalletActivation(admin)
 
         // Create user Alice with wallet
         let alice = await TestUser.createRegular('alice@email.com', keyPairs.alice)
@@ -195,24 +198,10 @@ describe('Complete flow test', function () {
         // Generate PDF report for Bob
         let reportResponse = await reportSvc.getTransactionsReport(bob)
         expect(reportResponse.status).to.equal(200)
-    })
 
-    it("Admin must be able to set new token issuer", async() => {
-        // Create Admin
-        let admin = await TestUser.createAdmin('admin@email.com')
-        await db.insertUser(admin)
-        await admin.getJwtToken()
-        let wallet = await walletSvc.createUserWallet(admin)
-        expect(wallet).to.not.be.undefined
-        admin.setWalletUuid(wallet.uuid)
-
-        // Create user Alice with wallet
-        let alice = await TestUser.createRegular('alice@email.com', keyPairs.alice)
-        await createUserWithWallet(alice)
-        await activateWallet(alice.walletUuid, admin)
-
-        // Set Alice as token issuer
-        let tokenIssuerTx = await walletSvc.generateTransferWalletTx(admin, alice.uuid, "TOKEN_ISSUER")
+        // Test transfer ownership feature
+        // Set Bob as token issuer
+        let tokenIssuerTx = await walletSvc.generateTransferWalletTx(admin, bob.uuid, "TOKEN_ISSUER")
         let signedTokenIssuerTx = await admin.client.signTransaction(tokenIssuerTx.tx)
         let tokenIssuerTxHash = await walletSvc.broadcastTx(signedTokenIssuerTx, tokenIssuerTx.tx_id)
         expect(tokenIssuerTxHash.tx_hash).to.not.be.undefined
@@ -227,8 +216,8 @@ describe('Complete flow test', function () {
         expect(adminResponse.role).to.equal("PLATFORM_MANAGER")
 
         // Verify Alice is now Token Issuer
-        let aliceResponse = await userSvc.getProfile(alice)
-        expect(aliceResponse.role).to.equal("TOKEN_ISSUER")
+        let bobResponse = await userSvc.getProfile(bob)
+        expect(bobResponse.role).to.equal("TOKEN_ISSUER")
     })
 
     async function createUserWithWallet(user) {
@@ -347,13 +336,39 @@ describe('Complete flow test', function () {
         let userWalletHash = (await walletSvc.getUserWallet(user)).hash
         let sellTx = await blockchainSvc.createSellOffer(userWalletHash, projectTxHash, shares, price)
         let signedSellTx = await user.client.signTransaction(sellTx)
-        let sellTxHash = await blockchainSvc.postTransaction(signedSellTx)
-
+        let userData = await userSvc.getProfile(user)
+        let sellTxHash = await blockchainSvc.postTransaction(signedSellTx, userData.coop)
         await ae.waitTxProcessed(sellTxHash).catch(err => { fail(err) })
     }
 
+    function waitForWalletActivation(user) {
+        return new Promise(async (resolve, reject) => {
+            let interval = 3000 //ms
+            let maxChecks = 20
+            var attempts = 0
+
+            while(attempts < maxChecks) {
+                await timeUtil.sleep(interval)
+                let [userWallet, err] = await handle(walletSvc.getUserWallet(user)) 
+                if (err !== null && userWallet.hash !== null) {
+                    resolve()
+                    break
+                }
+                attempts++
+            }
+
+            reject("Waiting for wallet activation timed out!")
+        })
+    }
+
+    const handle = (promise) => {
+        return promise
+          .then(data => ([data, undefined]))
+          .catch(error => Promise.resolve([undefined, error]));
+    }
+
     after(async() => {
-        // await docker.down()
+        await docker.down()
     })
 
 })
