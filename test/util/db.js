@@ -145,6 +145,24 @@ async function insertDeposit(ownerUuid, userUuid, amount, type) {
     return id
 }
 
+async function insertUnapprovedDeposit(ownerUuid, type) {
+    let id = getRandomInt()
+    await walletDb('deposit')
+        .insert({
+            id: id,
+            owner_uuid: ownerUuid,
+            reference: 'reference',
+            amount: 0,
+            created_at: new Date(),
+            created_by: ownerUuid,
+            type: type,
+            coop: COOP,
+            approved_by_user_uuid: null,
+            approved_at: null,
+        })
+    return id
+}
+
 async function insertWithdraw(ownerUuid, user, amount, type) {
     let id = getRandomInt()
     await walletDb('withdraw')
@@ -195,5 +213,6 @@ module.exports = {
     insertOrganizationMembership,
     insertProject,
     insertDeposit,
+    insertUnapprovedDeposit,
     insertWithdraw
 }

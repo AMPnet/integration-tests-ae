@@ -68,16 +68,6 @@ async function getProjectWallet(projUuid) {
     ).data
 }
 
-async function getUnactivatedUserWallets(admin) {
-    return (
-        await axios
-            .get(url.resolve(baseUrl, 'cooperative/wallet/user'), getBearer(admin.token))
-            .catch(err => {
-                console.log(err.response)
-            })
-    ).data
-}
-
 async function getUnactivatedOrgWallets(admin) {
     return (
         await axios
@@ -224,6 +214,16 @@ async function getActiveSellOffers(user) {
     ).data
 }
 
+async function getUnapprovedDeposits(user) {
+    return (
+        await axios
+            .get(url.resolve(baseUrl, `cooperative/deposit/unapproved`), getBearer(user.token))
+            .catch(err => {
+                console.log(err)
+            })
+    ).data
+}
+
 function getBearer(token) {
     return {
         headers: {
@@ -237,7 +237,6 @@ module.exports = {
     getUserWallet,
     getOrganizationWallet,
     getProjectWallet,
-    getUnactivatedUserWallets,
     getUnactivatedOrgWallets,
     getUnactivatedProjWallets,
     generateWalletActivationTx,
@@ -252,5 +251,6 @@ module.exports = {
     generateTransferWalletTx,
     broadcastTx,
     getPortfolio,
-    getActiveSellOffers
+    getActiveSellOffers,
+    getUnapprovedDeposits
 }
