@@ -69,17 +69,14 @@ describe('Complete flow test', function () {
         await db.insertUser(admin)
         await admin.getJwtToken()
 
-        // Create user Alice with wallet
-        let aliceKeypair = {
-            publicKey: 'ak_2RixP34RH4CtWQvy5TkKmxACjMYcvEjwPqxXz5V6kxHsuzhPD9',
-            secretKey: 'a03e0135c1d9a3352900f667b4dc57e688381cd34e72fa70e5aff30dadb37a77bbd560afdbc683ba818ac94b5893947e9977edd7ee92b659080c8f1658621618'
-        }
-        let alice = await TestUser.createRegular('alice@email.com', aliceKeypair)
-        await createUserWithWallet(alice)
+        // Alice has an unapproved deposit
+        let alice = await TestUser.createRegular('alice@email.com')
+        await db.insertUser(alice)
+        await db.insertUnapprovedDeposit(alice.uuid, 'USER')
 
-        let unactivatedUserWallets = await walletSvc.getUnactivatedUserWallets(admin)
-        expect(unactivatedUserWallets.users).to.have.lengthOf(1)
-        let user = unactivatedUserWallets.users[0].user
+        let unapprovedDeposits = await walletSvc.getUnapprovedDeposits(admin)
+        expect(unapprovedDeposits.deposits).to.have.lengthOf(1)
+        let user = unapprovedDeposits.deposits[0].user
         expect(user.uuid).to.equal(alice.uuid)
     })
 
@@ -89,21 +86,15 @@ describe('Complete flow test', function () {
         await db.insertUser(admin)
         await admin.getJwtToken()
 
-        // Create user Alice with wallet
-        let alice = await TestUser.createRegular('alice@email.com', keyPairs.alice)
-        await createUserWithWallet(alice)
-        await activateWallet(alice.walletUuid, admin)
+        // Admin creates Project with unapproved deposit
+        let orgUuid = await db.insertOrganization('Organization', admin)
+        let projUuid = await db.insertProject('Project', admin, orgUuid)
+        await db.insertUnapprovedDeposit(projUuid, 'PROJECT')
 
-        // Alice creates Organization with wallet
-        let orgUuid = await createOrganizationWithWallet('Org', alice, admin)
-
-        // Alice Project with wallet
-        let projUuid = await createProjectWithWallet('Active Project', alice, orgUuid, admin)
-        let activeProjects = (await projectSvc.getActiveProjects()).projects_wallets
-        expect(activeProjects).to.have.length(1)
-        expect(activeProjects[0].project.uuid).to.be.equal(projUuid)
-        let projectInfo = await blockchainSvc.getProjectInfo(activeProjects[0].wallet.hash)
-        expect(projectInfo.totalFundsRaised).to.be.equal(0)
+        let unapprovedDeposits = await walletSvc.getUnapprovedDeposits(admin)
+        expect(unapprovedDeposits.deposits).to.have.lengthOf(1)
+        let project = unapprovedDeposits.deposits[0].project
+        expect(project.uuid).to.equal(projUuid)
     })
 
     it('Must be able to execute complete flow', async () => {
