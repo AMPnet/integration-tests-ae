@@ -350,10 +350,13 @@ describe('Complete flow test', function () {
             while(attempts < maxChecks) {
                 await timeUtil.sleep(interval)
                 let [userWallet, err] = await handle(walletSvc.getUserWallet(user))
+                console.log("Wallet Error: ", err)
+                console.log("User wallet: ", userWallet)
                 if (err) {
                     attempts++
                 } else {
                     if (userWallet.hash !== null && userWallet.balance === 0) {
+                        console.log("### Success ###")
                         resolve()
                         break
                     }
