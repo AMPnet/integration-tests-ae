@@ -349,12 +349,15 @@ describe('Complete flow test', function () {
 
             while(attempts < maxChecks) {
                 await timeUtil.sleep(interval)
-                let [userWallet, err] = await handle(walletSvc.getUserWallet(user)) 
-                if (err !== null && userWallet.hash !== null) {
-                    resolve()
-                    break
+                let [userWallet, err] = await handle(walletSvc.getUserWallet(user))
+                if (err) {
+                    attempts++
+                } else {
+                    if (userWallet.hash !== null && userWallet.balance === 0) {
+                        resolve()
+                        break
+                    }
                 }
-                attempts++
             }
 
             reject("Waiting for wallet activation timed out!")
