@@ -20,7 +20,7 @@ services:
        - 8123:8123
 
   wallet-service:
-    image: ampnet/wallet-service:duimane
+    image: ampnet/wallet-service:latest
     environment:
       - "spring.profiles.active=integration-test"
     depends_on:
@@ -29,7 +29,7 @@ services:
        - 8128:8128
 
   blockchain-service:
-    image: ampnet/crowdfunding-ae-middleware:0.0.49-coop
+    image: ampnet/crowdfunding-ae-middleware:latest
     environment:
       NODE_ENV: local
       NODE_URL: http://ae-node:3013
@@ -63,7 +63,7 @@ services:
       - 8125:8125
 
   report-service:
-    image: ampnet/report-service:duimane
+    image: ampnet/report-service:latest
     environment:
       - "spring.profiles.active=dev"
     ports:
@@ -83,7 +83,7 @@ services:
      - "3014:3014"
 
   sophia-compiler:
-    image: aeternity/aesophia_http:v4.0.0
+    image: aeternity/aesophia_http:v4.3.2
     ports:
        - "3080:3080"
 
