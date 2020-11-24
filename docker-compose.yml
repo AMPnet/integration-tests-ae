@@ -36,14 +36,13 @@ services:
       NODE_INTERNAL_URL: http://ae-node:3113
       COMPILER_URL: http://sophia-compiler:3080
       NETWORK_ID: ae_docker
-      COOP_OWNER: ak_fUq2NesPXcYZ1CcqBcGC3StpdnQw3iVxMA3YSeCNAwfN4myQk
-      EUR_OWNER: ak_fUq2NesPXcYZ1CcqBcGC3StpdnQw3iVxMA3YSeCNAwfN4myQk
       REDIS_HOST: redis
       DB_HOST: db
       DB_PORT: 5432
       DB_USER: ae_middleware_testnet
       DB_PASSWORD: password
       DB_NAME: ae_middleware_testnet
+      WALLET_SERVICE_GRPC_URL: wallet-service:8228
     restart: always
     depends_on:
       - db
@@ -84,7 +83,7 @@ services:
      - "3014:3014"
 
   sophia-compiler:
-    image: aeternity/aesophia_http:v4.0.0
+    image: aeternity/aesophia_http:v4.3.2
     ports:
        - "3080:3080"
 

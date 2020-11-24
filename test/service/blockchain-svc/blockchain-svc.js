@@ -42,10 +42,10 @@ module.exports = {
             console.log(err)
         })).data.tx
     },
-    postTransaction: async function(tx) {
+    postTransaction: async function(tx, coopId) {
         return (await axios.post(
             url.resolve(baseUrl, `transactions`),
-            {  data: tx }
+            {  data: tx, coop: coopId }
         ).catch(err => {
             console.log(err)
         })).data.tx_hash

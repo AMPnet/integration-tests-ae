@@ -23,7 +23,7 @@ async function cleanWallet() {
 }
 
 async function cleanBlockchain() {
-    await blockchainDb('transaction').truncate()
+    await blockchainDb.raw('TRUNCATE TABLE coop CASCADE')
 }
 
 async function cleanUser() {

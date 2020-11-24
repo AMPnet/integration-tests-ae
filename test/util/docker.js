@@ -14,7 +14,8 @@ const sleep = time => new Promise(resolve => setTimeout(resolve, time))
 async function up() {
     await compose.upAll({
         cwd: dockerComposeLocation,
-        log: true
+        log: true,
+        commandOptions: ["--build"]
     }).catch(err => {
         console.log("docker-compose up error: ", err)
     })
