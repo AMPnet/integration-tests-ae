@@ -93,7 +93,7 @@ services:
       NODE_URL: http://ae-node:3013
       NODE_INTERNAL_URL: http://ae-node:3113
       COMPILER_URL: http://sophia-compiler:3080
-      FUNDERS: 1509d7d0e113528528b7ce4bf72c3a027bcc98656e46ceafcfa63e56597ec0d8206ff07f99ea517b7a028da8884fb399a2e3f85792fe418966991ba09b192c91
+      FUNDERS: 707881878eacacce4db463de9c7bf858b95c3144d52fafed4a41ffd666597d0393d23cf31fcd12324cd45d4784d08953e8df8283d129f357463e6795b40e88aa
       REDIS_HOST: redis
     restart: always
     depends_on:
