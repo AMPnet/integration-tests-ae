@@ -1,19 +1,23 @@
 let { Universal: Ae, Crypto, MemoryAccount, Node } = require('@aeternity/aepp-sdk')
 let blockchainSvc = require('../service/blockchain-svc/blockchain-svc')
 
+var aeInstance
+
 function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
 
 async function init() {
-    let keypair = Crypto.generateKeyPair()
-
+    let keypair = {
+        publicKey: "ak_2VmozN3ui8ahRdi7BgHYiZsFvun6BLmBS1VfE4R3iU3beCrfhk",
+        secretKey: "edcf669dcac2dcc71b226c210cf0dfba4997c2969b838544ba028adb641ffeaec5071c793da4edf0085f26b943007923a90769f205424b4a4655a94befda77bf"
+    }
     let node = await Node({
         url: 'http://localhost:3013',
         internalUrl: 'http://localhost:3113'
     })
 
-    aeSender = await Ae({
+    aeInstance = await Ae({
         nodes: [
             { name: "node", instance: node } 
         ],
@@ -27,6 +31,8 @@ async function init() {
 
     await blockchainSvc.init()
 }
+
+function instance() { return aeInstance }
 
 async function waitMined(txHash) {
     let interval = 1000 //ms
@@ -82,4 +88,4 @@ function waitTxProcessed(txHash) {
     })
 }
 
-module.exports = { init, waitMined, waitTxProcessed, sleep }
+module.exports = { init, waitMined, waitTxProcessed, sleep, instance }

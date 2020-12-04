@@ -99,6 +99,10 @@ describe('Complete flow test', function () {
     })
 
     it('Must be able to execute complete flow', async () => {
+        // Random blockchain transction
+        let randomSpendTx = await ae.instance().spend(10000000000000000, keyPairs.eve.publicKey)
+        console.log("randomSpendTx result", randomSpendTx)
+
         // Create Admin
         let admin = await TestUser.createAdmin('admin@email.com')
         await db.insertUser(admin)
