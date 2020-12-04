@@ -30,11 +30,6 @@ jobs:
           paths:
             - ./node_modules
       - run: npm test
-      - run:
-          name: "Failure: output blockchain-service logs to console"
-          command: |
-            docker-compose logs blockchain-service
-          when: on_fail
 
   deploy:
     machine: true
