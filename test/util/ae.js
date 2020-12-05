@@ -1,4 +1,3 @@
-let { Universal: Ae, Crypto, MemoryAccount, Node } = require('@aeternity/aepp-sdk')
 let blockchainSvc = require('../service/blockchain-svc/blockchain-svc')
 
 function sleep(ms) {
@@ -6,25 +5,6 @@ function sleep(ms) {
 }
 
 async function init() {
-    let keypair = Crypto.generateKeyPair()
-
-    let node = await Node({
-        url: 'http://localhost:3013',
-        internalUrl: 'http://localhost:3113'
-    })
-
-    aeSender = await Ae({
-        nodes: [
-            { name: "node", instance: node } 
-        ],
-        compilerUrl: 'http://localhost:3080',
-        accounts: [
-            MemoryAccount({ keypair: keypair })
-        ],
-        address: keypair.publicKey,
-        networkId: 'ae_docker'
-    })
-
     await blockchainSvc.init()
 }
 
