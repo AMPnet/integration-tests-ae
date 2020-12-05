@@ -11,6 +11,7 @@ let walletSvc = require('./service/wallet-svc')
 let userSvc = require('./service/user-svc')
 let reportSvc = require('./service/report-svc')
 let blockchainSvc = require('./service/blockchain-svc/blockchain-svc')
+const { util } = require('chai')
 
 let TestUser = require('./model/user').TestUser
 
@@ -99,6 +100,10 @@ describe('Complete flow test', function () {
     })
 
     it('Must be able to execute complete flow', async () => {
+        // Wait for blockchain node to execute hard forks and gets into normal operating state
+        console.log("Sleeping fo 10 seconds")
+        await timeUtil.sleep(10000)
+
         // Create Admin
         let admin = await TestUser.createAdmin('admin@email.com')
         await db.insertUser(admin)
