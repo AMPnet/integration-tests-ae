@@ -32,26 +32,22 @@ async function cleanUser() {
 }
 
 async function insertUser(user) {
-    let id = getRandomInt()
+    let userInfoUuid = uuid()
     
     await userDb('user_info')
         .insert({
-            id: id,
-            client_session_uuid: 'client_session_uuid',
-            identyum_user_uuid: 'identyum_user_uuid',
+            uuid: userInfoUuid,
+            session_id: uuid(),
             first_name: 'First',
             last_name: 'Last',
-            verified_email: 'verified_email@mail.com',
-            phone_number: '+385',
+            id_number: '43143124',
             date_of_birth: '1978-03-02',
-            personal_number: 'personal_num',
             document_type: 'ID_CARD',
             document_number: '48077962579',
-            document_date_of_expiry: '2022-02-02',
-            document_issuing_country: 'HRV',
-            document_issued_by: 'document_issued_by',
+            document_valid_until: '2022-02-02',
+            document_valid_from: '2018-02-02',
+            document_country: 'HRV',
             nationality: 'HRV',
-            address: 'address',
             created_at: new Date(),
             connected: true,
             deactivated: false
@@ -68,7 +64,7 @@ async function insertUser(user) {
             created_at: new Date(),
             auth_method: 'EMAIL',
             enabled: true,
-            user_info_id: id,
+            user_info_uuid: userInfoUuid,
             coop: COOP
         })
 }
