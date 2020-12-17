@@ -1,8 +1,7 @@
-name: Deploy on Staging
+name: Daily Test
 on:
-  push:
-    branches:
-      - master
+  schedule:
+    - cron:  '0 9 * * *'
 
 jobs:
   test:
@@ -27,17 +26,3 @@ jobs:
       - run: npm ci
       - run: npm run build --if-present
       - run: npm test
-
-  deploy:
-    runs-on: ubuntu-latest
-    needs: test
-    steps:
-      - name: Update all docker images on staging
-        uses: appleboy/ssh-action@v0.1.3
-        with:
-          host: ${{ secrets.SSH_HOST }}
-          username: ${{ secrets.SSH_USERNAME }}
-          key: ${{ secrets.SSH_KEY }}
-          script: |
-            docker-compose -f /home/eugen/ampnet-docker-compose/docker-compose.yml pull
-            docker-compose -f /home/eugen/ampnet-docker-compose/docker-compose.yml up -d
