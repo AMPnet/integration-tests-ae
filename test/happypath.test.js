@@ -345,13 +345,12 @@ describe('Complete flow test', function () {
         return new Promise(async (resolve, reject) => {
             let interval = 3000 //ms
             let maxChecks = 50
-            var attempts = 0
+            let attempts = 0
 
             while(attempts < maxChecks) {
                 await timeUtil.sleep(interval)
                 let [userWallet, err] = await handle(walletSvc.getUserWallet(user))
-                console.log("Wallet Error: ", err)
-                console.log("User wallet: ", userWallet)
+                console.log("Attempt: ", attempts)
                 if (err) {
                     attempts++
                 } else {
@@ -360,6 +359,7 @@ describe('Complete flow test', function () {
                         resolve()
                         break
                     }
+                    attempts++
                 }
             }
 
