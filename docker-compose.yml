@@ -11,7 +11,7 @@ services:
       - 5432:5432
 
   project-service:
-    image: ampnet/project-service:latest
+    image: ampnet/project-service:amqp
     environment:
       - "spring.profiles.active=integration-test"
     depends_on:
@@ -20,7 +20,7 @@ services:
        - 8123:8123
 
   wallet-service:
-    image: ampnet/wallet-service:latest
+    image: ampnet/wallet-service:amqp
     environment:
       - "spring.profiles.active=integration-test"
     depends_on:
@@ -54,7 +54,7 @@ services:
       - 8224:8224
 
   user-service:
-    image: ampnet/user-service:latest
+    image: ampnet/user-service:amqp
     environment:
       - "spring.profiles.active=integration-test"
     depends_on:
@@ -108,3 +108,11 @@ services:
     image: redis:latest
     ports:
       - 6379:6379
+
+  rabbitmq:
+    image: rabbitmq:3.8-alpine
+    ports:
+      - 5672:5672
+    environment:
+      RABBITMQ_DEFAULT_USER: user
+      RABBITMQ_DEFAULT_PASS: password

@@ -5,6 +5,7 @@ let docker = require('./util/docker')
 let db = require('./util/db')
 let ae = require('./util/ae')
 let timeUtil = require('./util/time')
+let amqp = require('./util/amqp')
 
 let projectSvc = require('./service/project-svc')
 let walletSvc = require('./service/wallet-svc')
@@ -99,6 +100,7 @@ describe('Complete flow test', function () {
     })
 
     it('Must be able to execute complete flow', async () => {
+        amqp.init()
         // Create Admin
         let admin = await TestUser.createAdmin('admin@email.com')
         await db.insertUser(admin)
@@ -218,6 +220,11 @@ describe('Complete flow test', function () {
         // Verify Alice is now Token Issuer
         let bobResponse = await userSvc.getProfile(bob)
         expect(bobResponse.role).to.equal("TOKEN_ISSUER")
+
+        // Verify AMQP messages
+        expect(amqp.getWalletActivatedAccount()).to.equal(5)
+        expect(amqp.getDepositCount()).to.equal(3)
+        expect(amqp.getWithdrawCount()).to.equal(2)
     })
 
     async function createUserWithWallet(user) {
