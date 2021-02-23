@@ -222,9 +222,36 @@ describe('Complete flow test', function () {
         expect(bobResponse.role).to.equal("TOKEN_ISSUER")
 
         // Verify AMQP messages
-        expect(amqp.getWalletActivatedAccount()).to.equal(5)
-        expect(amqp.getDepositCount()).to.equal(3)
-        expect(amqp.getWithdrawCount()).to.equal(2)
+        expect(amqp.getWalletActivations()).to.have.lengthOf(5)
+        // console.log('Wallet activations AMQP: ', amqp.getWalletActivations().toString())
+        let userWalletAddresses = amqp.getWalletActivations()
+            .map(item => JSON.parse(item))
+            .filter(item => item.type === 'USER')
+            .map(item => item.activation_data);
+        // console.log('User wallet addresses: ', userWalletAddresses)
+        expect(userWalletAddresses).to.have.lengthOf(3)
+        expect(userWalletAddresses).to.have.members([keyPairs.alice.publicKey, keyPairs.bob.publicKey, keyPairs.eve.publicKey])
+
+        expect(amqp.getDeposits()).to.have.lengthOf(3);
+        // console.log('Deposits: ', amqp.getDeposits());
+        let depositOwners = amqp.getDeposits().map(item => JSON.parse(item).user);
+        // console.log('Deposit owners: ', depositOwners);
+        expect(depositOwners).to.have.members([bob.uuid, eve.uuid, projUuid])
+
+        // console.log('Withdraws: ', amqp.getWithdraws());
+        expect(amqp.getWithdraws()).to.have.lengthOf(2);
+        let withdrawOwners = amqp.getWithdraws().map(item => JSON.parse(item).user);
+        // console.log("Withdraw owners: ", withdrawOwners)
+        expect(withdrawOwners).to.have.members([eve.uuid, projUuid])
+
+        // TODO: implement
+        // expect(amqp.getProjectInvestedCount()).to.equal(3)
+        // console.log('Project investments AMQP: ', amqp.getProjectInvestments().toString())
+        // let amqpProjectWalletHashes = amqp.getProjectInvestments().map(item => JSON.parse(item).project_wallet_tx_hash)
+        // console.log('Wallet hashes: ', amqpProjectWalletHashes)
+        // console.log('project wallet hash: ', projectWalletHash)
+        // expect(amqpProjectWalletHashes).to.have.members([projectWalletHash])
+        // expect(amqp.getProjectFundedCount()).to.equal(1)
     })
 
     async function createUserWithWallet(user) {

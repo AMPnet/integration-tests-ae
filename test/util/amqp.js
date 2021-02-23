@@ -1,16 +1,21 @@
 const amqp = require('amqplib/callback_api');
-let accountActivatedCount = 0;
-let depositCount = 0;
-let withdrawCount = 0;
+
+let walletActivations = [];
+let deposits = [];
+let withdraws = [];
+let projectsFunded = [];
+let projectInvestments = [];
 
 function init() {
     amqp.connect('amqp://user:password@localhost', function(error0, connection) {
         if (error0) {
             throw error0;
         }
-        handleChannel(connection, 'mail.wallet.activated', function() { accountActivatedCount++; });
-        handleChannel(connection, 'mail.wallet.deposit', function() { depositCount++; });
-        handleChannel(connection, 'mail.wallet.withdraw-info', function() { withdrawCount++; });
+        handleChannel(connection, 'mail.wallet.activated', function(message) { walletActivations.push(message); });
+        handleChannel(connection, 'mail.wallet.deposit', function(message) { deposits.push(message); });
+        handleChannel(connection, 'mail.wallet.withdraw-info', function(message) { withdraws.push(message); });
+        handleChannel(connection, 'mail.middleware.project-funded', function(message) { projectsFunded.push(message); });
+        handleChannel(connection, 'mail.middleware.project-invested', function(message) { projectInvestments.push(message); });
     });
 }
 
@@ -24,26 +29,34 @@ function handleChannel(connection, queue, handle) {
             durable: true
         });
 
-        channel.consume(queue, function(msg) {
-            handle();
+        channel.consume(queue, function(message) {
+            handle(message.content.toString());
         }, {
             noAck: true
         });
     });
 }
 
-function getWalletActivatedAccount() {
-    return accountActivatedCount;
+function getWalletActivations() {
+    return walletActivations
 }
 
-function getDepositCount() {
-    return depositCount;
+function getProjectInvestments() {
+    return projectInvestments;
 }
 
-function getWithdrawCount() {
-    return withdrawCount;
+function getProjectsFunded() {
+    return projectsFunded;
+}
+
+function getDeposits() {
+    return deposits;
+}
+
+function getWithdraws() {
+    return withdraws;
 }
 
 module.exports = {
-    init, getWalletActivatedAccount, getDepositCount, getWithdrawCount
+    init, getWalletActivations, getDeposits, getWithdraws, getProjectInvestments, getProjectsFunded
 }
