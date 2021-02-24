@@ -11,7 +11,7 @@ services:
       - 5432:5432
 
   project-service:
-    image: ampnet/project-service:amqp
+    image: ampnet/project-service:latest
     environment:
       - "spring.profiles.active=integration-test"
     depends_on:
@@ -20,7 +20,7 @@ services:
        - 8123:8123
 
   wallet-service:
-    image: ampnet/wallet-service:amqp
+    image: ampnet/wallet-service:latest
     environment:
       - "spring.profiles.active=integration-test"
     depends_on:
@@ -43,6 +43,7 @@ services:
       DB_PASSWORD: password
       DB_NAME: ae_middleware_testnet
       WALLET_SERVICE_GRPC_URL: wallet-service:8228
+      AMQP_URL: amqp://user:password@rabbitmq
     restart: always
     depends_on:
       - db
@@ -54,7 +55,7 @@ services:
       - 8224:8224
 
   user-service:
-    image: ampnet/user-service:amqp
+    image: ampnet/user-service:latest
     environment:
       - "spring.profiles.active=integration-test"
     depends_on:
