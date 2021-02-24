@@ -1,4 +1,6 @@
-const amqp = require('amqplib/callback_api');
+const amqp = require('amqplib');
+
+let connection;
 
 let walletActivations = [];
 let deposits = [];
@@ -6,35 +8,30 @@ let withdraws = [];
 let projectsFunded = [];
 let projectInvestments = [];
 
-function init() {
-    amqp.connect('amqp://user:password@localhost', function(error0, connection) {
-        if (error0) {
-            throw error0;
-        }
-        handleChannel(connection, 'mail.wallet.activated', function(message) { walletActivations.push(message); });
-        handleChannel(connection, 'mail.wallet.deposit', function(message) { deposits.push(message); });
-        handleChannel(connection, 'mail.wallet.withdraw-info', function(message) { withdraws.push(message); });
-        handleChannel(connection, 'mail.middleware.project-funded', function(message) { projectsFunded.push(message); });
-        handleChannel(connection, 'mail.middleware.project-invested', function(message) { projectInvestments.push(message); });
-    });
+async function init() {
+    connection = await amqp.connect('amqp://user:password@localhost');
+    const channel = await connection.createChannel();
+    await handleChannel(channel, 'mail.wallet.activated', function(message) { walletActivations.push(message); });
+    await handleChannel(channel, 'mail.wallet.deposit', function(message) { deposits.push(message); });
+    await handleChannel(channel, 'mail.wallet.withdraw-info', function(message) { withdraws.push(message); });
+    await handleChannel(channel, 'mail.middleware.project-funded', function(message) { projectsFunded.push(message); });
+    await handleChannel(channel, 'mail.middleware.project-invested', function(message) { projectInvestments.push(message); });
 }
 
-function handleChannel(connection, queue, handle) {
-    connection.createChannel(function(error1, channel) {
-        if (error1) {
-            throw error1;
-        }
+async function stop() {
+    return connection.close();
+}
 
-        channel.assertQueue(queue, {
-            durable: true
-        });
-
-        channel.consume(queue, function(message) {
-            handle(message.content.toString());
-        }, {
-            noAck: true
-        });
-    });
+async function handleChannel(channel, queue, handle) {
+    await channel.assertQueue(queue, {
+        durable: true
+    })
+    await channel.purgeQueue(queue)
+    return channel.consume(queue, (msg) => {
+        handle(msg.content.toString());
+    }, {
+        noAck: true
+    })
 }
 
 function getWalletActivations() {
@@ -58,5 +55,5 @@ function getWithdraws() {
 }
 
 module.exports = {
-    init, getWalletActivations, getDeposits, getWithdraws, getProjectInvestments, getProjectsFunded
+    init, stop, getWalletActivations, getDeposits, getWithdraws, getProjectInvestments, getProjectsFunded
 }

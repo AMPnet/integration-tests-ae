@@ -35,6 +35,7 @@ describe('Complete flow test', function () {
     before(async () => {
         await docker.up()
         await ae.init()
+        await amqp.init()
     })
 
     beforeEach(async () => {
@@ -100,7 +101,6 @@ describe('Complete flow test', function () {
     })
 
     it('Must be able to execute complete flow', async () => {
-        amqp.init()
         // Create Admin
         let admin = await TestUser.createAdmin('admin@email.com')
         await db.insertUser(admin)
@@ -228,23 +228,23 @@ describe('Complete flow test', function () {
             .filter(item => item.type === 'USER')
             .map(item => item.activation_data);
         expect(userWalletAddresses).to.have.lengthOf(3);
-        expect(userWalletAddresses).to.have.members([keyPairs.alice.publicKey, keyPairs.bob.publicKey, keyPairs.eve.publicKey]);
+        expect(userWalletAddresses)
+            .to.have.members([keyPairs.alice.publicKey, keyPairs.bob.publicKey, keyPairs.eve.publicKey]);
 
         expect(amqp.getDeposits()).to.have.lengthOf(3);
-        const depositOwners = amqp.getDeposits().map(item => JSON.parse(item).user);
-        expect(depositOwners).to.have.members([bob.uuid, eve.uuid, projUuid]);
+        expect(amqp.getDeposits().map(item => JSON.parse(item).user))
+            .to.have.members([bob.uuid, eve.uuid, projUuid]);
 
         expect(amqp.getWithdraws()).to.have.lengthOf(2);
-        const withdrawOwners = amqp.getWithdraws().map(item => JSON.parse(item).user);
-        expect(withdrawOwners).to.have.members([eve.uuid, projUuid]);
+        expect(amqp.getWithdraws().map(item => JSON.parse(item).user)).to.have.members([eve.uuid, projUuid]);
 
-        const amqpProjectFundedHash = amqp.getProjectsFunded().map(item => JSON.parse(item).tx_hash);
-        expect(amqpProjectFundedHash).to.have.members([projectWalletHash]);
+        console.log("Projects funded", amqp.getProjectsFunded().toString())
         expect(amqp.getProjectsFunded()).to.have.lengthOf(1);
+        expect(amqp.getProjectsFunded().map(item => JSON.parse(item).tx_hash)).to.have.members([projectWalletHash]);
 
-        const amqpProjectWalletHashes = amqp.getProjectInvestments().map(item => JSON.parse(item).project_wallet_tx_hash);
         expect(amqp.getProjectInvestments()).to.have.lengthOf(4);
-        expect(amqpProjectWalletHashes).to.contain.members([projectWalletHash]);
+        expect(amqp.getProjectInvestments().map(item => JSON.parse(item).project_wallet_tx_hash))
+            .to.contain.members([projectWalletHash]);
     })
 
     async function createUserWithWallet(user) {
@@ -401,7 +401,8 @@ describe('Complete flow test', function () {
     }
 
     after(async() => {
-        await docker.down()
+        await amqp.stop();
+        await docker.down();
     })
 
 })
