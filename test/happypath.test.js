@@ -5,6 +5,7 @@ let docker = require('./util/docker')
 let db = require('./util/db')
 let ae = require('./util/ae')
 let timeUtil = require('./util/time')
+let amqp = require('./util/amqp')
 
 let projectSvc = require('./service/project-svc')
 let walletSvc = require('./service/wallet-svc')
@@ -34,6 +35,7 @@ describe('Complete flow test', function () {
     before(async () => {
         await docker.up()
         await ae.init()
+        await amqp.init()
     })
 
     beforeEach(async () => {
@@ -218,6 +220,31 @@ describe('Complete flow test', function () {
         // Verify Alice is now Token Issuer
         let bobResponse = await userSvc.getProfile(bob)
         expect(bobResponse.role).to.equal("TOKEN_ISSUER")
+
+        // Verify AMQP messages
+        expect(amqp.getWalletActivations()).to.have.lengthOf(5)
+        const userWalletAddresses = amqp.getWalletActivations()
+            .map(item => JSON.parse(item))
+            .filter(item => item.type === 'USER')
+            .map(item => item.activation_data);
+        expect(userWalletAddresses).to.have.lengthOf(3);
+        expect(userWalletAddresses)
+            .to.have.members([keyPairs.alice.publicKey, keyPairs.bob.publicKey, keyPairs.eve.publicKey]);
+
+        expect(amqp.getDeposits()).to.have.lengthOf(3);
+        expect(amqp.getDeposits().map(item => JSON.parse(item).user))
+            .to.have.members([bob.uuid, eve.uuid, projUuid]);
+
+        expect(amqp.getWithdraws()).to.have.lengthOf(2);
+        expect(amqp.getWithdraws().map(item => JSON.parse(item).user)).to.have.members([eve.uuid, projUuid]);
+
+        console.log("Projects funded", amqp.getProjectsFunded().toString())
+        expect(amqp.getProjectsFunded()).to.have.lengthOf(1);
+        expect(amqp.getProjectsFunded().map(item => JSON.parse(item).tx_hash)).to.have.members([projectWalletHash]);
+
+        expect(amqp.getProjectInvestments()).to.have.lengthOf(4);
+        expect(amqp.getProjectInvestments().map(item => JSON.parse(item).project_wallet_tx_hash))
+            .to.contain.members([projectWalletHash]);
     })
 
     async function createUserWithWallet(user) {
@@ -374,7 +401,8 @@ describe('Complete flow test', function () {
     }
 
     after(async() => {
-        await docker.down()
+        await amqp.stop();
+        await docker.down();
     })
 
 })

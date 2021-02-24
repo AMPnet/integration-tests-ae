@@ -43,6 +43,7 @@ services:
       DB_PASSWORD: password
       DB_NAME: ae_middleware_testnet
       WALLET_SERVICE_GRPC_URL: wallet-service:8228
+      AMQP_URL: amqp://user:password@rabbitmq
     restart: always
     depends_on:
       - db
@@ -108,3 +109,11 @@ services:
     image: redis:latest
     ports:
       - 6379:6379
+
+  rabbitmq:
+    image: rabbitmq:3.8-alpine
+    ports:
+      - 5672:5672
+    environment:
+      RABBITMQ_DEFAULT_USER: user
+      RABBITMQ_DEFAULT_PASS: password
