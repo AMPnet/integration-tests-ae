@@ -15,7 +15,7 @@
     "amqplib": "^0.6.0",
     "chai": "^4.2.0",
     "deepmerge": "^4.2.2",
-    "docker-compose": "^0.23.5",
+    "docker-compose": "^0.23.6",
     "grpc": "^1.24.3",
     "knex": "^0.21.12",
     "mocha": "^8.2.1",
