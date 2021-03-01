@@ -12,7 +12,7 @@
     "@aeternity/aepp-sdk": "^7.4.2",
     "@danielwpz/health-check": "0.0.1",
     "@grpc/proto-loader": "^0.5.6",
-    "amqplib": "^0.6.0",
+    "amqplib": "^0.7.0",
     "chai": "^4.2.0",
     "deepmerge": "^4.2.2",
     "docker-compose": "^0.23.6",
