@@ -10,6 +10,14 @@ async function getTransactionsReport(user) {
     )
 }
 
+async function getUsersReport(user) {
+    return (
+        await axios
+            .get(url.resolve(baseUrl, "/admin/report/user"), getBearer(user.token))
+            .catch(err => { console.log(err.response) })
+    )
+}
+
 function getBearer(token) {
     return {
         headers: {
@@ -19,5 +27,5 @@ function getBearer(token) {
 }
 
 module.exports = {
-    getTransactionsReport
+    getTransactionsReport, getUsersReport
 }
