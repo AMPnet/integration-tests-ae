@@ -201,6 +201,10 @@ describe('Complete flow test', function () {
         let reportResponse = await reportSvc.getTransactionsReport(bob)
         expect(reportResponse.status).to.equal(200)
 
+        // Generate PDF report for Coop users
+        const usersReportResponse = await reportSvc.getUsersReport(admin)
+        expect(usersReportResponse.status).to.equal(200)
+
         // Test transfer ownership feature
         // Set Bob as token issuer
         let tokenIssuerTx = await walletSvc.generateTransferWalletTx(admin, bob.uuid, "TOKEN_ISSUER")
