@@ -106,7 +106,7 @@ services:
       - "8130:8130"
 
   redis:
-    image: redis:latest
+    image: redis:6-alpine
     ports:
       - 6379:6379
 
