@@ -22,6 +22,11 @@ async function up() {
     await healthcheck()
 }
 
+async function showLogs(services) {
+    let logs = await compose.logs(services)
+    console.log("logs result", logs)
+}
+
 async function down() {
     await compose.down({
         cwd: dockerComposeLocation,
@@ -63,5 +68,5 @@ let healthcheck = new Healthcheck([
 }
 
 module.exports = {
-    up, down
+    up, down, showLogs
 }

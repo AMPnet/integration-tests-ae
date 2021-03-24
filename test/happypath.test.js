@@ -406,6 +406,7 @@ describe('Complete flow test', function () {
 
     after(async() => {
         await amqp.stop();
+        await docker.showLogs('blockchain-service')
         await docker.down();
     })
 
