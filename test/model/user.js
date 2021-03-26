@@ -25,8 +25,8 @@ class TestUser {
 
     async initClient() {
         let node = await Node({
-            url: 'http://localhost:3013',
-            internalUrl: 'http://localhost:3113'
+            url: 'http://165.22.92.53:3013',
+            internalUrl: 'http://165.22.92.53:3113'
         })
 
         this.client = await Ae({
@@ -38,7 +38,7 @@ class TestUser {
                 MemoryAccount({ keypair: this.keypair })
             ],
             address: this.keypair.publicKey,
-            networkId: 'ae_docker'
+            networkId: 'ampnet_private_network'
         })
     }
 

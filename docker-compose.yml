@@ -32,10 +32,10 @@ services:
     image: ampnet/crowdfunding-ae-middleware:latest
     environment:
       NODE_ENV: local
-      NODE_URL: http://ae-node:3013
-      NODE_INTERNAL_URL: http://ae-node:3113
+      NODE_URL: http://165.22.92.53:3013
+      NODE_INTERNAL_URL: http://165.22.92.53:3113
       COMPILER_URL: http://sophia-compiler:3080
-      NETWORK_ID: ae_docker
+      NETWORK_ID: ampnet_private_network
       REDIS_HOST: redis
       DB_HOST: db
       DB_PORT: 5432
@@ -47,7 +47,6 @@ services:
     restart: always
     depends_on:
       - db
-      - ae-node
       - sophia-compiler
       - redis
     ports:
@@ -70,19 +69,6 @@ services:
     ports:
       - 8129:8129
 
-  ae-node:
-    image: aeternity/aeternity:v5.5.4
-    environment:
-      AETERNITY_CONFIG: /home/aeternity/aeternity.yaml
-    volumes:
-      - ${PWD}/node/config/singlenode_mean15.yaml:/home/aeternity/aeternity.yaml
-      - ${PWD}/node/config/accounts_test.json:/home/aeternity/node/data/aecore/.genesis/accounts_test.json
-      - ${PWD}/node/keys/node1:/home/aeternity/node/keys
-    ports:
-     - "3013:3013"
-     - "3113:3113"
-     - "3014:3014"
-
   sophia-compiler:
     image: aeternity/aesophia_http:v4.3.2
     ports:
@@ -91,14 +77,14 @@ services:
   auto-funder:
     image: ampnet/auto-funder:latest
     environment:
-      NODE_URL: http://ae-node:3013
-      NODE_INTERNAL_URL: http://ae-node:3113
+      NODE_URL: http://165.22.92.53:3013
+      NODE_INTERNAL_URL: http://165.22.92.53:3113
+      NETWORK_ID: ampnet_private_network
       COMPILER_URL: http://sophia-compiler:3080
       REDIS_HOST: redis
       FUNDERS: 707881878eacacce4db463de9c7bf858b95c3144d52fafed4a41ffd666597d0393d23cf31fcd12324cd45d4784d08953e8df8283d129f357463e6795b40e88aa
     restart: always
     depends_on:
-      - ae-node
       - sophia-compiler
       - db
       - redis
