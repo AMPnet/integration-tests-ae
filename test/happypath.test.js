@@ -375,7 +375,7 @@ describe('Complete flow test', function () {
     function waitForWalletActivation(user) {
         return new Promise(async (resolve, reject) => {
             let interval = 3000 //ms
-            let maxChecks = 20
+            let maxChecks = 40
             let attempts = 0
 
             while(attempts < maxChecks) {
@@ -388,12 +388,13 @@ describe('Complete flow test', function () {
                     if (userWallet.hash !== null && userWallet.balance === 0) {
                         console.log("### Success ###")
                         resolve()
-                        break
+                        return
                     }
                     attempts++
                 }
             }
 
+            await docker.showLogs('blockchain-service')
             reject("Waiting for wallet activation timed out!")
         })
     }
