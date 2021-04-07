@@ -23,6 +23,16 @@ async function getActiveProjects() {
     ).data
 }
 
+async function getProject(uuid) {
+    return (
+        await axios
+            .get(url.resolve(baseUrl, `public/project/${uuid}`))
+            .catch(err => {
+                console.log(err.response)
+            })
+    ).data
+}
+
 function getBearer(token) {
     return {
         headers: {
@@ -33,5 +43,6 @@ function getBearer(token) {
 
 module.exports = { 
     getOrganizationMemberships,
-    getActiveProjects
+    getActiveProjects,
+    getProject
 }

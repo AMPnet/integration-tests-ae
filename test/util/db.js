@@ -119,7 +119,8 @@ async function insertProject(name, owner, orgUuid) {
             created_by_user_uuid: owner.uuid,
             created_at: new Date(),
             active: true,
-            coop: COOP
+            coop: COOP,
+            main_image: "https://ampnet.io/assets/images/logo-amp.png"
         })
     return generatedUuid
 }
