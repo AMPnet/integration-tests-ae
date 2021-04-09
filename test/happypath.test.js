@@ -109,7 +109,7 @@ describe('Complete flow test', function () {
         const orgUuid = await db.insertOrganization('Organization', admin)
         const projUuid = await db.insertProject('Project', admin, orgUuid)
 
-        const projectMainImage = (await projectSvc.getProject(projUuid)).main_image
+        const projectMainImage = (await projectSvc.getProject(projUuid)).image
         const smallImageResponse = await imgproxySvc.getImage(projectMainImage.square_small)
         verifyImageProxyResponse(smallImageResponse)
         const mediumImageResponse = await imgproxySvc.getImage(projectMainImage.wide_medium)
