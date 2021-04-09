@@ -109,13 +109,8 @@ describe('Complete flow test', function () {
         const orgUuid = await db.insertOrganization('Organization', admin)
         const projUuid = await db.insertProject('Project', admin, orgUuid)
 
-        const projectMainImage = (await projectSvc.getProject(projUuid)).image
-        const smallImageResponse = await imgproxySvc.getImage(projectMainImage.square_small)
-        verifyImageProxyResponse(smallImageResponse)
-        const mediumImageResponse = await imgproxySvc.getImage(projectMainImage.wide_medium)
-        verifyImageProxyResponse(mediumImageResponse)
-        const fullImageResponse = await imgproxySvc.getImage(projectMainImage.full)
-        verifyImageProxyResponse(fullImageResponse)
+        await verifyImageResponse((await projectSvc.getOrganization(orgUuid)).image)
+        await verifyImageResponse((await projectSvc.getProject(projUuid)).image)
     })
 
     it('Must be able to execute complete flow', async () => {
@@ -388,6 +383,12 @@ describe('Complete flow test', function () {
         let userData = await userSvc.getProfile(user)
         let sellTxHash = await blockchainSvc.postTransaction(signedSellTx, userData.coop)
         await ae.waitTxProcessed(sellTxHash).catch(err => { fail(err) })
+    }
+
+    async function verifyImageResponse(response) {
+        verifyImageProxyResponse(await imgproxySvc.getImage(response.square_small))
+        verifyImageProxyResponse(await imgproxySvc.getImage(response.wide_medium))
+        verifyImageProxyResponse(await imgproxySvc.getImage(response.full))
     }
 
     function verifyImageProxyResponse(response) {

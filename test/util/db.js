@@ -81,7 +81,8 @@ async function insertOrganization(name, owner) {
             updated_at: null,
             approved: true,
             approved_by_user_uuid: owner.uuid,
-            coop: COOP
+            coop: COOP,
+            header_image: "https://ampnet.io/assets/images/logo-amp.png"
         })
     return generatedUuid
 }
