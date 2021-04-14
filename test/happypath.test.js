@@ -393,7 +393,8 @@ describe('Complete flow test', function () {
 
     function verifyImageProxyResponse(response) {
         expect(response.status).to.equal(200)
-        expect(response.headers['content-type']).to.equal('image/png')
+        expect(response.headers['content-type']).to.be.a('string')
+            .and.satisfy(msg => msg.startsWith('image/'));
         expect(Number(response.headers['content-length'])).is.above(0)
     }
 
