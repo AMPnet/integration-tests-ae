@@ -11,7 +11,7 @@ services:
       - 5432:5432
 
   project-service:
-    image: ampnet/project-service:imgproxy
+    image: ampnet/project-service:latest
     environment:
       - "spring.profiles.active=integration-test"
       - "com.ampnet.projectservice.image-proxy.url=http://localhost:8300"
