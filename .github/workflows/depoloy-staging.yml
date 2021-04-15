@@ -33,11 +33,12 @@ jobs:
     needs: test
     steps:
       - name: Update all docker images on staging
-        uses: appleboy/ssh-action@v0.1.3
+        uses: appleboy/ssh-action@v0.1.4
         with:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USERNAME }}
           key: ${{ secrets.SSH_KEY }}
           script: |
-            docker-compose -f /home/eugen/ampnet-docker-compose/docker-compose.yml pull
-            docker-compose --env-file /home/eugen/ampnet-docker-compose/.env -f /home/eugen/ampnet-docker-compose/docker-compose.yml -f /home/eugen/ampnet-docker-compose/docker-compose.override.yml up -d
+            cd /home/eugen/ampnet-docker-compose
+            docker-compose pull
+            docker-compose up -d
