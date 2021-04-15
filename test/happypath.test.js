@@ -12,6 +12,7 @@ let walletSvc = require('./service/wallet-svc')
 let userSvc = require('./service/user-svc')
 let reportSvc = require('./service/report-svc')
 let blockchainSvc = require('./service/blockchain-svc/blockchain-svc')
+let imgproxySvc = require('./service/imgproxy-svc')
 
 let TestUser = require('./model/user').TestUser
 
@@ -98,6 +99,18 @@ describe('Complete flow test', function () {
         expect(unapprovedDeposits.deposits).to.have.lengthOf(1)
         let project = unapprovedDeposits.deposits[0].project
         expect(project.uuid).to.equal(projUuid)
+    })
+
+    it('Validate imgproxy', async () => {
+        const admin = await TestUser.createAdmin('admin@email.com')
+        await db.insertUser(admin)
+        await admin.getJwtToken()
+
+        const orgUuid = await db.insertOrganization('Organization', admin)
+        const projUuid = await db.insertProject('Project', admin, orgUuid)
+
+        await verifyImageResponse((await projectSvc.getOrganization(orgUuid)).image)
+        await verifyImageResponse((await projectSvc.getProject(projUuid)).image)
     })
 
     it('Must be able to execute complete flow', async () => {
@@ -370,6 +383,19 @@ describe('Complete flow test', function () {
         let userData = await userSvc.getProfile(user)
         let sellTxHash = await blockchainSvc.postTransaction(signedSellTx, userData.coop)
         await ae.waitTxProcessed(sellTxHash).catch(err => { fail(err) })
+    }
+
+    async function verifyImageResponse(response) {
+        verifyImageProxyResponse(await imgproxySvc.getImage(response.square_small))
+        verifyImageProxyResponse(await imgproxySvc.getImage(response.wide_medium))
+        verifyImageProxyResponse(await imgproxySvc.getImage(response.full))
+    }
+
+    function verifyImageProxyResponse(response) {
+        expect(response.status).to.equal(200)
+        expect(response.headers['content-type']).to.be.a('string')
+            .and.satisfy(msg => msg.startsWith('image/'));
+        expect(Number(response.headers['content-length'])).is.above(0)
     }
 
     function waitForWalletActivation(user) {

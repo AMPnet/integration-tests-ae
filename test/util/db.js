@@ -81,7 +81,8 @@ async function insertOrganization(name, owner) {
             updated_at: null,
             approved: true,
             approved_by_user_uuid: owner.uuid,
-            coop: COOP
+            coop: COOP,
+            header_image: "https://ampnet.io/assets/images/logo-amp.png"
         })
     return generatedUuid
 }
@@ -119,7 +120,8 @@ async function insertProject(name, owner, orgUuid) {
             created_by_user_uuid: owner.uuid,
             created_at: new Date(),
             active: true,
-            coop: COOP
+            coop: COOP,
+            main_image: "https://ampnet.io/assets/images/logo-amp.png"
         })
     return generatedUuid
 }
