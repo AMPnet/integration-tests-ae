@@ -40,4 +40,4 @@ jobs:
           key: ${{ secrets.SSH_KEY }}
           script: |
             docker-compose -f /home/eugen/ampnet-docker-compose/docker-compose.yml pull
-            docker-compose -f /home/eugen/ampnet-docker-compose/docker-compose.yml -f /home/eugen/ampnet-docker-compose/docker-compose.override.yml up -d
+            docker-compose --env-file /home/eugen/ampnet-docker-compose/.env -f /home/eugen/ampnet-docker-compose/docker-compose.yml -f /home/eugen/ampnet-docker-compose/docker-compose.override.yml up -d
