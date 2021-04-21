@@ -105,8 +105,8 @@ describe('Complete flow test', function () {
         expect(project.uuid).to.equal(projUuid)
     })
 
-    it.only('Must be able to update and send correct mail', async () => {
-        const content = '<p>New mail confirmation email: <a href="{{& link}}">{{& link}}</a></p>'
+    it('Must be able to update and send correct mail', async () => {
+        const content = '<p>New mail confirmation email:<a href="{{& link}}">{{& link}}</a></p>'
         const title = 'New mail confirmation title'
         const mailType = 'MAIL_CONFIRMATION_MAIL'
         const lang = 'EN'
@@ -128,6 +128,10 @@ describe('Complete flow test', function () {
         let mailList = await retry(fakeStmpSvc.getMails, 100)
         expect(mailList).to.have.length(1)
         expect(mailList[0].subject).to.be.equal(title)
+        expect(mailList[0].textAsHtml).to.have.string(
+            content.replace('<a href="{{& link}}">{{& link}}</a>', '')
+                .replace('<p>', '').replace('</p>', '')
+        )
     })
 
     it('Validate imgproxy', async () => {
