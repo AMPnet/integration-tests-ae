@@ -2,10 +2,11 @@ let knex = require('knex')
 let time = require('./time')
 let { v4: uuid } = require('uuid')
 
-let blockchainDb    = knex(getConfig("ae_middleware_testnet"))
-let userDb          = knex(getConfig("user_service"))
-let projectDb       = knex(getConfig("project_service"))
-let walletDb       = knex(getConfig("wallet_service"))
+let blockchainDb = knex(getConfig("ae_middleware_testnet"))
+let userDb       = knex(getConfig("user_service"))
+let projectDb    = knex(getConfig("project_service"))
+let walletDb     = knex(getConfig("wallet_service"))
+let cmsDb        = knex(getConfig("headless_cms_service"))
 
 const ORG_ADMIN_ROLE = 1
 const COOP = 'ampnet'
@@ -29,6 +30,10 @@ async function cleanBlockchain() {
 async function cleanUser() {
     await userDb.raw('TRUNCATE TABLE user_info CASCADE')
     await userDb.raw('TRUNCATE TABLE app_user CASCADE')
+}
+
+async function cleanCms() {
+    await cmsDb.raw('TRUNCATE TABLE mail CASCADE')
 }
 
 async function insertUser(user) {
@@ -207,11 +212,13 @@ module.exports = {
     cleanProject,
     cleanBlockchain,
     cleanUser,
+    cleanCms,
     insertUser,
     insertOrganization,
     insertOrganizationMembership,
     insertProject,
     insertDeposit,
     insertUnapprovedDeposit,
-    insertWithdraw
+    insertWithdraw,
+    COOP
 }

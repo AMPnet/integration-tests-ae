@@ -115,3 +115,36 @@ services:
       IMGPROXY_SALT: 520f986b998545b4785e0defbc4f3c1203f22de2374a3d53cb7a7fe9fea309c5
     ports:
       - 8300:8300
+
+  cms-service:
+    image: ampnet/headless-cms-service:latest
+    depends_on:
+      - db
+    environment:
+      - "spring.datasource.url=jdbc:postgresql://db:5432/headless_cms_service"
+      - "server.port=8131"
+    ports:
+      - 8131:8131
+
+  fake-smtp-server:
+    image: reachfive/fake-smtp-server
+    ports:
+      - 1080:1080
+
+  mail-service:
+    image: ampnet/mail-service:0.7.0
+    environment:
+      - "spring.profiles.active=dev"
+      - "spring.mail.host=fake-smtp-server"
+      - "spring.mail.port=1025"
+      - "com.ampnet.mailservice.cms.base-url=http://cms-service:8131"
+      - "spring.mail.properties.mail.smtp.auth=false"
+      - "spring.mail.properties.mail.smtp.starttls.enable=false"
+      - "spring.mail.username="
+      - "spring.mail.password="
+    depends_on:
+      - rabbitmq
+      - fake-smtp-server
+      - cms-service
+    ports:
+      - 8127:8127

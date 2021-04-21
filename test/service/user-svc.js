@@ -22,6 +22,14 @@ async function getProfile(user) {
     ).data
 }
 
+async function resendMailConfirmation(user) {
+    return (
+        await axios
+            .get(url.resolve(baseUrl, "mail-confirmation/resend"), getBearer(user.token))
+            .catch(err => { console.log(err.response) })
+    )
+}
+
 function getBearer(token) {
     return {
         headers: {
@@ -32,5 +40,6 @@ function getBearer(token) {
 
 module.exports = {
     getJwtToken,
-    getProfile
+    getProfile,
+    resendMailConfirmation
 }
