@@ -42,3 +42,4 @@ jobs:
             cd /home/eugen/ampnet-docker-compose
             docker-compose pull
             docker-compose up -d
+            docker-compose restart nginx
