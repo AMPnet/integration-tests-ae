@@ -13,6 +13,8 @@ let userSvc = require('./service/user-svc')
 let reportSvc = require('./service/report-svc')
 let blockchainSvc = require('./service/blockchain-svc/blockchain-svc')
 let imgproxySvc = require('./service/imgproxy-svc')
+let cmsSvc = require('./service/cms-svc')
+let fakeStmpSvc = require('./service/fake-stmp-svc')
 
 let TestUser = require('./model/user').TestUser
 
@@ -44,6 +46,8 @@ describe('Complete flow test', function () {
         await db.cleanUser()
         await db.cleanProject()
         await db.cleanWallet()
+        await db.cleanCms()
+        await fakeStmpSvc.deleteAll()
     })
 
     it('Validate Project service connection to User service', async () => {
@@ -101,6 +105,35 @@ describe('Complete flow test', function () {
         expect(project.uuid).to.equal(projUuid)
     })
 
+    it('Must be able to update and send correct mail', async () => {
+        const content = '<p>New mail confirmation email:<a href="{{& link}}">{{& link}}</a></p>'
+        const title = 'New mail confirmation title'
+        const mailType = 'MAIL_CONFIRMATION_MAIL'
+        const lang = 'EN'
+
+        // Create Admin
+        let admin = await TestUser.createAdmin('admin@email.com')
+        await db.insertUser(admin)
+        await admin.getJwtToken()
+
+        // Admin updates mail confirmation mail
+        let updatedDepositRequestMail = await cmsSvc.updateMail(admin, db.COOP, mailType, lang, content, title)
+        let depositRequestMailList = await cmsSvc.getMail(db.COOP, mailType, lang)
+        expect(depositRequestMailList.mails).to.have.length(1)
+        expect(updatedDepositRequestMail).to.be.deep.equal(depositRequestMailList.mails[0])
+
+        // Admin requests confirmation mail resend
+        await userSvc.resendMailConfirmation(admin)
+
+        let mailList = await retry(fakeStmpSvc.getMails, 100000)
+        expect(mailList).to.have.length(1)
+        expect(mailList[0].subject).to.be.equal(title)
+        expect(mailList[0].textAsHtml).to.have.string(
+            content.replace('<a href="{{& link}}">{{& link}}</a>', '')
+                .replace('<p>', '').replace('</p>', '')
+        )
+    })
+
     it('Validate imgproxy', async () => {
         const admin = await TestUser.createAdmin('admin@email.com')
         await db.insertUser(admin)
@@ -120,7 +153,6 @@ describe('Complete flow test', function () {
         await admin.getJwtToken()
         await walletSvc.createUserWallet(admin)
         await waitForWalletActivation(admin)
-
         // Create user Alice with wallet
         let alice = await TestUser.createRegular('alice@email.com', keyPairs.alice)
         await createUserWithWallet(alice)
@@ -238,30 +270,15 @@ describe('Complete flow test', function () {
         let bobResponse = await userSvc.getProfile(bob)
         expect(bobResponse.role).to.equal("TOKEN_ISSUER")
 
-        // Verify AMQP messages
-        expect(amqp.getWalletActivations()).to.have.lengthOf(5)
-        const userWalletAddresses = amqp.getWalletActivations()
-            .map(item => JSON.parse(item))
-            .filter(item => item.type === 'USER')
-            .map(item => item.activation_data);
-        expect(userWalletAddresses).to.have.lengthOf(3);
-        expect(userWalletAddresses)
-            .to.have.members([keyPairs.alice.publicKey, keyPairs.bob.publicKey, keyPairs.eve.publicKey]);
-
-        expect(amqp.getDeposits()).to.have.lengthOf(3);
-        expect(amqp.getDeposits().map(item => JSON.parse(item).user))
-            .to.have.members([bob.uuid, eve.uuid, projUuid]);
-
-        expect(amqp.getWithdraws()).to.have.lengthOf(2);
-        expect(amqp.getWithdraws().map(item => JSON.parse(item).user)).to.have.members([eve.uuid, projUuid]);
-
-        console.log("Projects funded", amqp.getProjectsFunded().toString())
-        expect(amqp.getProjectsFunded()).to.have.lengthOf(1);
-        expect(amqp.getProjectsFunded().map(item => JSON.parse(item).tx_hash)).to.have.members([projectWalletHash]);
-
-        expect(amqp.getProjectInvestments()).to.have.lengthOf(4);
-        expect(amqp.getProjectInvestments().map(item => JSON.parse(item).project_wallet_tx_hash))
-            .to.contain.members([projectWalletHash]);
+        // Verify correct mails are sent
+        let mailList = await retry(fakeStmpSvc.getMails, 100000)
+        let mailsBySubject = groupMailsBySubject(mailList)
+        expect(mailsBySubject['Project is fully funded']).to.equal(1)
+        expect(mailsBySubject['Deposit']).to.equal(1)
+        expect(mailsBySubject['Investment']).to.equal(2)
+        expect(mailsBySubject['New wallet created']).to.equal(6)
+        expect(mailsBySubject['Wallet activated']).to.equal(3)
+        expect(mailsBySubject['Withdraw']).to.equal(1)
     })
 
     async function createUserWithWallet(user) {
@@ -429,6 +446,26 @@ describe('Complete flow test', function () {
         return promise
           .then(data => ([data, undefined]))
           .catch(error => Promise.resolve([undefined, error]));
+    }
+
+    async function retry(fn, n) {
+        for (let i=0; i < n; i++) {
+            let functionResult = await fn();
+            if (functionResult.length !== 0) return functionResult
+        }
+        throw new Error(`Failed retrying ${n} times`)
+    }
+
+    function groupMailsBySubject(mailList) {
+        let map = new Map()
+        for (i = 0; i < mailList.length; i++) {
+            if (map[mailList[i].subject] === undefined) {
+                map[mailList[i].subject] = 1
+            } else {
+                map[mailList[i].subject] ++
+            }
+        }
+        return map
     }
 
     after(async() => {

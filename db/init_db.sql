@@ -12,3 +12,6 @@ CREATE EXTENSION IF NOT EXISTS pgcrypto;
 CREATE DATABASE ae_middleware_testnet ENCODING 'UTF-8';
 CREATE USER ae_middleware_testnet WITH PASSWORD 'password';
 GRANT ALL PRIVILEGES ON DATABASE ae_middleware_testnet TO ae_middleware_testnet;
+
+CREATE DATABASE headless_cms_service ENCODING 'UTF-8';
+CREATE USER headless_cms_service WITH PASSWORD 'password';
