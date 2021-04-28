@@ -269,6 +269,16 @@ describe('Complete flow test', function () {
         // Verify Alice is now Token Issuer
         let bobResponse = await userSvc.getProfile(bob)
         expect(bobResponse.role).to.equal("TOKEN_ISSUER")
+
+        // Verify correct mails are sent
+        let mailList = await retry(fakeStmpSvc.getMails, 100)
+        let mailsBySubject = groupMailsBySubject(mailList)
+        expect(mailsBySubject['Project is fully funded']).to.equal(1)
+        expect(mailsBySubject['Deposit']).to.equal(1)
+        expect(mailsBySubject['Investment']).to.equal(2)
+        expect(mailsBySubject['New wallet created']).to.equal(6)
+        expect(mailsBySubject['Wallet activated']).to.equal(3)
+        expect(mailsBySubject['Withdraw']).to.equal(1)
     })
 
     async function createUserWithWallet(user) {
@@ -444,6 +454,18 @@ describe('Complete flow test', function () {
             if (functionResult.length !== 0) return functionResult
         }
         throw new Error(`Failed retrying ${n} times`)
+    }
+
+    function groupMailsBySubject(mailList) {
+        let map = new Map()
+        for (i = 0; i < mailList.length; i++) {
+            if (map[mailList[i].subject] === undefined) {
+                map[mailList[i].subject] = 1
+            } else {
+                map[mailList[i].subject] ++
+            }
+        }
+        return map
     }
 
     after(async() => {

@@ -132,7 +132,7 @@ services:
       - 1080:1080
 
   mail-service:
-    image: ampnet/mail-service:0.7.0
+    image: ampnet/mail-service:cms
     environment:
       - "spring.profiles.active=dev"
       - "spring.mail.host=fake-smtp-server"
