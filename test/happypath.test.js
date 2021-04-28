@@ -125,7 +125,7 @@ describe('Complete flow test', function () {
         // Admin requests confirmation mail resend
         await userSvc.resendMailConfirmation(admin)
 
-        let mailList = await retry(fakeStmpSvc.getMails, 100)
+        let mailList = await retry(fakeStmpSvc.getMails, 100000)
         expect(mailList).to.have.length(1)
         expect(mailList[0].subject).to.be.equal(title)
         expect(mailList[0].textAsHtml).to.have.string(
@@ -271,7 +271,7 @@ describe('Complete flow test', function () {
         expect(bobResponse.role).to.equal("TOKEN_ISSUER")
 
         // Verify correct mails are sent
-        let mailList = await retry(fakeStmpSvc.getMails, 100)
+        let mailList = await retry(fakeStmpSvc.getMails, 100000)
         let mailsBySubject = groupMailsBySubject(mailList)
         expect(mailsBySubject['Project is fully funded']).to.equal(1)
         expect(mailsBySubject['Deposit']).to.equal(1)
