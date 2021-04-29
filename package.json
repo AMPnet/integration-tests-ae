@@ -11,7 +11,7 @@
   "dependencies": {
     "@aeternity/aepp-sdk": "^7.7.0",
     "@danielwpz/health-check": "0.0.1",
-    "@grpc/proto-loader": "^0.5.6",
+    "@grpc/proto-loader": "^0.6.1",
     "amqplib": "^0.7.0",
     "chai": "^4.3.4",
     "deepmerge": "^4.2.2",
