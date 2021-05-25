@@ -18,6 +18,14 @@ async function getUsersReport(user) {
     )
 }
 
+async function getXlsxReport(user) {
+    return (
+        await axios
+            .get(url.resolve(baseUrl, "/admin/report/xlsx?type=INVESTMENT"), getBearer(user.token))
+            .catch(err => { console.log(err.response) })
+    )
+}
+
 function getBearer(token) {
     return {
         headers: {
@@ -27,5 +35,5 @@ function getBearer(token) {
 }
 
 module.exports = {
-    getTransactionsReport, getUsersReport
+    getTransactionsReport, getUsersReport, getXlsxReport
 }
