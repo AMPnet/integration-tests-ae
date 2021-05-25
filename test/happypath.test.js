@@ -218,6 +218,10 @@ describe('Complete flow test', function () {
         const usersReportResponse = await reportSvc.getUsersReport(admin)
         expect(usersReportResponse.status).to.equal(200)
 
+        // Generate xlsx report
+        const xlsxReport = await reportSvc.getXlsxReport(admin)
+        expect(xlsxReport.status).to.equal(200)
+
         // Test transfer ownership feature
         // Set Bob as token issuer
         let tokenIssuerTx = await walletSvc.generateTransferWalletTx(admin, bob.uuid, "TOKEN_ISSUER")
