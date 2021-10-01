@@ -9,7 +9,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@aeternity/aepp-sdk": "^7.7.0",
+    "@aeternity/aepp-sdk": "^9.0.0",
     "@danielwpz/health-check": "0.0.1",
     "@grpc/proto-loader": "^0.6.2",
     "amqplib": "^0.7.0",
